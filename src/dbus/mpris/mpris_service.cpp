@@ -1656,6 +1656,17 @@ void MprisService::addOrRefreshPlayer(const std::string& busName) {
 
             const auto last_it = m_lastPropertiesUpdate.find(busName);
             if (last_it != m_lastPropertiesUpdate.end() && now - last_it->second < kPropertiesDebounceWindow) {
+              if (!m_pendingPropertiesRefresh.contains(busName)) {
+                m_pendingPropertiesRefresh.insert(busName);
+                const std::weak_ptr<void> aliveGuard = m_aliveGuard;
+                DeferredCall::callLater([this, aliveGuard, busName]() {
+                  if (aliveGuard.expired()) {
+                    return;
+                  }
+                  m_pendingPropertiesRefresh.erase(busName);
+                  addOrRefreshPlayer(busName);
+                });
+              }
               return;
             }
             m_lastPropertiesUpdate[busName] = now;
@@ -2084,6 +2095,7 @@ void MprisService::applyPlayerSnapshot(
     const bool significantChanged = trackChanged
         || previous_info.identity != merged.identity
         || previous_info.playbackStatus != merged.playbackStatus
+        || previous_info.volume != merged.volume
         || previous_info.loopStatus != merged.loopStatus
         || previous_info.shuffle != merged.shuffle
         || previous_info.canGoPrevious != merged.canGoPrevious
