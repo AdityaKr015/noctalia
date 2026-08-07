@@ -24,7 +24,8 @@ namespace {
     return OsdContent{
         .kind = OsdKind::Media,
         .icon = "disc-filled",
-        .value = playerName.empty() ? std::to_string(percent) + "%" : playerName + " — " + std::to_string(percent) + "%",
+        .value =
+            playerName.empty() ? std::to_string(percent) + "%" : playerName + " — " + std::to_string(percent) + "%",
         .progress = static_cast<float>(std::clamp(volume, 0.0, 1.0)),
         .overLimit = percent > 100,
     };
