@@ -25,7 +25,7 @@ namespace {
         .kind = OsdKind::Media,
         .icon = "disc-filled",
         .value =
-            playerName.empty() ? std::to_string(percent) + "%" : playerName + " — " + std::to_string(percent) + "%",
+            playerName.empty() ? std::to_string(percent) + "%" : playerName + " - " + std::to_string(percent) + "%",
         .progress = static_cast<float>(std::clamp(volume, 0.0, 1.0)),
         .overLimit = percent > 100,
     };
@@ -38,6 +38,7 @@ void MediaOsd::bindOverlay(OsdOverlay& overlay) { m_overlay = &overlay; }
 void MediaOsd::onMprisChanged(const MprisService& service) {
   const auto activePlayerOpt = service.activePlayer();
   if (!activePlayerOpt.has_value()) {
+    m_lastActivePlayer.clear();
     return;
   }
   const auto& activePlayer = activePlayerOpt.value();
@@ -48,18 +49,22 @@ void MediaOsd::onMprisChanged(const MprisService& service) {
   if (!m_hasData) {
     m_lastData = osdData;
     m_lastVolume = volume;
+    m_lastActivePlayer = activePlayer.busName;
     m_hasData = true;
     return;
   }
 
+  // Reseed the baseline silently when the active player switches.
+  const bool activePlayerChanged = activePlayer.busName != m_lastActivePlayer;
   const bool trackChanged = activePlayer.playbackStatus == "Playing" && osdData != m_lastData;
-  const bool volumeChanged = std::abs(volume - m_lastVolume) > kVolumeChangeEpsilon;
+  const bool volumeChanged = !activePlayerChanged && std::abs(volume - m_lastVolume) > kVolumeChangeEpsilon;
 
   if (trackChanged) {
     m_lastData = osdData;
   }
-  if (volumeChanged) {
+  if (volumeChanged || activePlayerChanged) {
     m_lastVolume = volume;
+    m_lastActivePlayer = activePlayer.busName;
   }
 
   if (m_overlay == nullptr) {

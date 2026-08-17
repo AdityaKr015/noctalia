@@ -1652,14 +1652,18 @@ void MprisService::addOrRefreshPlayer(const std::string& busName) {
 
             const auto last_it = m_lastPropertiesUpdate.find(busName);
             if (last_it != m_lastPropertiesUpdate.end() && now - last_it->second < kPropertiesDebounceWindow) {
-              if (!m_pendingPropertiesRefresh.contains(busName)) {
-                m_pendingPropertiesRefresh.insert(busName);
+              // Debounce bursts to one trailing refresh at the window end.
+              auto& timerId = m_propertiesRefreshTimers[busName];
+              if (!TimerManager::instance().active(timerId)) {
                 const std::weak_ptr<void> aliveGuard = m_aliveGuard;
-                DeferredCall::callLater([this, aliveGuard, busName]() {
+                const auto remaining =
+                    std::chrono::ceil<std::chrono::milliseconds>(kPropertiesDebounceWindow - (now - last_it->second));
+                timerId = TimerManager::instance().start(timerId, remaining, [this, aliveGuard, busName]() {
                   if (aliveGuard.expired()) {
                     return;
                   }
-                  m_pendingPropertiesRefresh.erase(busName);
+                  m_propertiesRefreshTimers.erase(busName);
+                  m_lastPropertiesUpdate[busName] = std::chrono::steady_clock::now();
                   addOrRefreshPlayer(busName);
                 });
               }

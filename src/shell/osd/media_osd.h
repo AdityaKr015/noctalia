@@ -20,5 +20,6 @@ private:
   OsdOverlay* m_overlay = nullptr;
   MediaOsdData m_lastData;
   double m_lastVolume{0.0};
+  std::string m_lastActivePlayer;
   bool m_hasData = false;
 };
