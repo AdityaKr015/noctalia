@@ -38,7 +38,7 @@
   {
     "emoji": "🤣",
     "name": "rolling on the floor laughing",
-    "keywords": ["lol", "laughing"],
+    "keywords": ["lol", "laughing", "rofl"],
     "category": "people"
   },
   {
@@ -6453,7 +6453,7 @@
   {
     "emoji": "🎉",
     "name": "party popper",
-    "keywords": ["hooray", "party"],
+    "keywords": ["hooray", "party", "tada"],
     "category": "activity"
   },
   {

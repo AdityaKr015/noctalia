@@ -30,6 +30,7 @@
 #include <format>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -1987,6 +1988,71 @@ namespace settings {
         }
 
         addWidgetSettingsPanel(body, widgetName, currentLanePath, ctx);
+
+        // Reset to Defaults button — collects all currently overridden setting paths for this widget.
+        if (ctx.clearOverrides && ctx.configService != nullptr) {
+          const auto widgetType = widgetTypeForReference(ctx.config, widgetName);
+          if (!widgetType.empty()) {
+            std::vector<std::vector<std::string>> resetPaths;
+            const auto widgetIt = ctx.config.widgets.find(widgetName);
+            const WidgetConfig* widgetCfg = widgetIt != ctx.config.widgets.end() ? &widgetIt->second : nullptr;
+            const noctalia::bar::GestureMask reserved = noctalia::bar::reservedGesturesForType(widgetType);
+            auto specs = widgetSettingSpecs(widgetType, widgetCfg, ctx.config.shell.fontFamily);
+            for (const auto& spec : specs) {
+              if (spec.schema.key == "actions") {
+                for (const auto gesture : noctalia::bar::allGestures()) {
+                  if (reserved.contains(gesture)) {
+                    continue;
+                  }
+                  std::vector<std::string> gesturePath = {
+                      "widget", widgetName, "actions", std::string(noctalia::bar::gestureConfigKey(gesture))
+                  };
+                  if (ctx.configService->hasEffectiveOverride(gesturePath)) {
+                    resetPaths.push_back(std::move(gesturePath));
+                  }
+                }
+              } else {
+                auto path = widgetSettingPath(std::string(widgetName), spec.schema.key);
+                if (ctx.configService->hasEffectiveOverride(path)) {
+                  resetPaths.push_back(std::move(path));
+                }
+              }
+            }
+            if (widgetCfg != nullptr) {
+              std::set<std::string> knownKeys;
+              for (const auto& spec : specs) {
+                knownKeys.insert(spec.schema.key);
+              }
+              for (const auto& [key, value] : widgetCfg->settings) {
+                if (knownKeys.contains(key)) {
+                  continue;
+                }
+                auto path = widgetSettingPath(std::string(widgetName), key);
+                if (ctx.configService->hasEffectiveOverride(path)) {
+                  resetPaths.push_back(std::move(path));
+                }
+              }
+            }
+            if (!resetPaths.empty()) {
+              body.addChild(
+                  ui::row(
+                      {
+                          .justify = FlexJustify::End,
+                          .paddingV = Style::spaceXs * ctx.scale,
+                          .fillWidth = true,
+                      },
+                      ui::button({
+                          .text = i18n::tr("settings.entities.widget.inspector.reset-defaults"),
+                          .variant = ButtonVariant::Ghost,
+                          .onClick = [clearOverrides = ctx.clearOverrides, paths = std::move(resetPaths)]() mutable {
+                            clearOverrides(std::move(paths));
+                          },
+                      })
+                  )
+              );
+            }
+          }
+        }
       }
     }
 
@@ -2071,10 +2137,10 @@ namespace settings {
 
     // Radius Auto | Custom segmented control + stepper (no label).
     std::unique_ptr<Node> makeGroupRadiusControl(
-        const BarWidgetEditorContext& ctx, std::optional<float> radius,
+        const BarWidgetEditorContext& ctx, std::optional<float> radius, float inheritedRadius,
         std::function<void(std::optional<float>)> onChange
     ) {
-      const int radiusValue = static_cast<int>(std::lround(std::clamp(radius.value_or(12.0F), 0.0F, 80.0F)));
+      const int radiusValue = static_cast<int>(std::lround(std::clamp(radius.value_or(inheritedRadius), 0.0F, 80.0F)));
       auto wrap = ui::row({.align = FlexAlign::Center, .gap = Style::spaceSm * ctx.scale});
       wrap->addChild(
           ui::segmented({
@@ -2267,9 +2333,12 @@ namespace settings {
               }
           )
       );
+
+      const auto inheritedRadius = static_cast<float>(inheritedCapsuleRadiusForLane(ctx.config, laneListPath));
+
       ctx.makeRow(
           *panelPtr, groupEntry("radius"),
-          makeGroupRadiusControl(ctx, style.radius, [mutateGroup](std::optional<float> r) {
+          makeGroupRadiusControl(ctx, style.radius, inheritedRadius, [mutateGroup](std::optional<float> r) {
             mutateGroup([&](BarCapsuleGroupStyle& g) { g.radius = r; });
           })
       );

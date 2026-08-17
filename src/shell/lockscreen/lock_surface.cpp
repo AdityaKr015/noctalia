@@ -573,6 +573,15 @@ bool LockSurface::initialize(ext_session_lock_v1* lock, wl_output* output, std::
     return false;
   }
 
+  if (const auto* outputInfo = m_connection.findOutputByWl(output); outputInfo != nullptr) {
+    setConfiguredScaleNumerator(
+        outputInfo->configuredScaleNumerator > 0 ? static_cast<std::uint32_t>(outputInfo->configuredScaleNumerator) : 1U
+    );
+    setBufferScale(outputInfo->scale);
+  } else {
+    setBufferScale(scale);
+  }
+
   if (!createWlSurface()) {
     return false;
   }
@@ -580,8 +589,6 @@ bool LockSurface::initialize(ext_session_lock_v1* lock, wl_output* output, std::
 
   m_output = output;
   m_connection.registerSurfaceOutput(m_surface, output);
-  setBufferScale(scale);
-
   m_lockSurface = ext_session_lock_v1_get_lock_surface(lock, m_surface, output);
   if (m_lockSurface == nullptr) {
     destroySurface();
@@ -597,6 +604,10 @@ bool LockSurface::initialize(ext_session_lock_v1* lock, wl_output* output, std::
 
   setRunning(true);
   return true;
+}
+
+void LockSurface::syncOutputScale(std::int32_t bufferScale, std::uint32_t configuredScaleNumerator) {
+  updateOutputScale(bufferScale, configuredScaleNumerator);
 }
 
 void LockSurface::setLockedState(bool locked) {
@@ -849,12 +860,13 @@ void LockSurface::handleConfigure(
 }
 
 void LockSurface::prepareFrame(bool needsUpdate, bool needsLayout) {
-  auto* renderer = renderContext();
-  if (renderer == nullptr || width() == 0 || height() == 0) {
+  auto* context = renderContext();
+  if (context == nullptr || width() == 0 || height() == 0) {
     return;
   }
 
-  renderer->makeCurrent(renderTarget());
+  context->makeCurrent(renderTarget());
+  Renderer& renderer = renderTarget().renderer();
 
   if (m_widgetsHost != nullptr) {
     m_widgetsHost->prepareFrame(*this, needsUpdate, needsLayout);
@@ -863,7 +875,7 @@ void LockSurface::prepareFrame(bool needsUpdate, bool needsLayout) {
   if (needsUpdate) {
     UiPhaseScope updatePhase(UiPhase::Update);
     updateCopy();
-    syncRegularExtras(*renderer);
+    syncRegularExtras(renderer);
   }
 
   if (needsUpdate || needsLayout) {
@@ -873,10 +885,10 @@ void LockSurface::prepareFrame(bool needsUpdate, bool needsLayout) {
 }
 
 void LockSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
-  auto* renderer = renderContext();
-  if (renderer == nullptr) {
+  if (renderContext() == nullptr) {
     return;
   }
+  Renderer& renderer = renderTarget().renderer();
 
   const auto sw = static_cast<float>(width);
   const auto sh = static_cast<float>(height);
@@ -1029,11 +1041,11 @@ void LockSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
   const float sessionGlyphSize = 16.0F * contentScale;
 
   forecastDaysFit = showWeather
-      ? fitForecastDays(*renderer, weatherBudget, weatherGlyphSize, forecastGlyphSize, captionSize, maxForecastDays)
+      ? fitForecastDays(renderer, weatherBudget, weatherGlyphSize, forecastGlyphSize, captionSize, maxForecastDays)
       : 0;
   const bool showForecast = forecastDaysFit > 0;
   const float forecastWidth =
-      showForecast ? forecastBlockWidth(*renderer, forecastDaysFit, forecastGlyphSize, captionSize) : 0.0F;
+      showForecast ? forecastBlockWidth(renderer, forecastDaysFit, forecastGlyphSize, captionSize) : 0.0F;
 
   if (m_mediaArt != nullptr) {
     m_mediaArt->setSize(mediaArtSize, mediaArtSize);
@@ -1191,7 +1203,7 @@ void LockSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
     m_loginButton->setGlyphSize(sessionGlyphSize);
   }
 
-  m_loginPanel->arrange(*renderer, LayoutRect{panelX, panelY, panelWidth, panelHeight});
+  m_loginPanel->arrange(renderer, LayoutRect{panelX, panelY, panelWidth, panelHeight});
 
   // Auth panel: sibling above/below the login box (flips below when near the top edge).
   if (m_authPanel != nullptr && m_authLabel != nullptr) {
@@ -1229,7 +1241,7 @@ void LockSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
       const float authYAbove = panelY - authGap - authH;
       const float authYBelow = panelY + panelHeight + authGap;
       const float authY = (authYAbove >= Style::spaceLg) ? authYAbove : authYBelow;
-      m_authPanel->arrange(*renderer, LayoutRect{authX, authY, authW, authH});
+      m_authPanel->arrange(renderer, LayoutRect{authX, authY, authW, authH});
     }
   }
 }
