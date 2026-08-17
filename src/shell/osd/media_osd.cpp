@@ -37,44 +37,40 @@ void MediaOsd::bindOverlay(OsdOverlay& overlay) { m_overlay = &overlay; }
 
 void MediaOsd::onMprisChanged(const MprisService& service) {
   const auto activePlayerOpt = service.activePlayer();
-  if (!activePlayerOpt.has_value()) {
-    m_lastActivePlayer.clear();
-    return;
-  }
-  const auto& activePlayer = activePlayerOpt.value();
-  const MediaOsdData osdData = {.title = activePlayer.title, .artist = joinedArtists(activePlayer.artists)};
-  const double volume = activePlayer.volume;
+  if (activePlayerOpt.has_value()) {
+    const auto& activePlayer = activePlayerOpt.value();
+    const MediaOsdData osdData = {.title = activePlayer.title, .artist = joinedArtists(activePlayer.artists)};
 
-  // First snapshot seeds the baseline; it is not a user-visible transition.
-  if (!m_hasData) {
-    m_lastData = osdData;
-    m_lastVolume = volume;
-    m_lastActivePlayer = activePlayer.busName;
-    m_hasData = true;
-    return;
-  }
-
-  // Reseed the baseline silently when the active player switches.
-  const bool activePlayerChanged = activePlayer.busName != m_lastActivePlayer;
-  const bool trackChanged = activePlayer.playbackStatus == "Playing" && osdData != m_lastData;
-  const bool volumeChanged = !activePlayerChanged && std::abs(volume - m_lastVolume) > kVolumeChangeEpsilon;
-
-  if (trackChanged) {
-    m_lastData = osdData;
-  }
-  if (volumeChanged || activePlayerChanged) {
-    m_lastVolume = volume;
-    m_lastActivePlayer = activePlayer.busName;
+    // Show an OSD when the active player changes its track while playing, or when the OSD is first initialized.
+    if (!m_hasData) {
+      m_lastData = osdData;
+      m_hasData = true;
+    } else if (activePlayer.playbackStatus == "Playing" && osdData != m_lastData) {
+      m_lastData = osdData;
+      if (m_overlay != nullptr) {
+        m_overlay->show(makeMprisContent(osdData));
+      }
+    }
   }
 
-  if (m_overlay == nullptr) {
-    return;
+  // Show an OSD when any player's volume changes, even if it's not the active player.
+  for (const auto& [busName, player] : service.players()) {
+    const auto it = m_lastVolumes.find(busName);
+    if (it == m_lastVolumes.end()) {
+      m_lastVolumes.emplace(busName, player.volume);
+      continue;
+    }
+    if (std::abs(player.volume - it->second) <= kVolumeChangeEpsilon) {
+      continue;
+    }
+    it->second = player.volume;
+    if (m_overlay != nullptr) {
+      m_overlay->show(makeVolumeContent(player.identity, player.volume));
+    }
   }
 
-  // Track-change OSD keeps priority when both change in the same event.
-  if (trackChanged) {
-    m_overlay->show(makeMprisContent(osdData));
-  } else if (volumeChanged) {
-    m_overlay->show(makeVolumeContent(activePlayer.identity, volume));
+  // Remove any cached volume entries for players that have disappeared.
+  if (m_lastVolumes.size() != service.players().size()) {
+    std::erase_if(m_lastVolumes, [&](const auto& entry) { return !service.players().contains(entry.first); });
   }
 }
