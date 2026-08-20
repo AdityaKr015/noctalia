@@ -463,6 +463,23 @@ void WallpaperPanel::create() {
       })
   );
 
+  toolbar->addChild(
+      ui::button({
+          .out = &m_favoriteCurrentButton,
+          .glyph = "star",
+          .glyphSize = Style::fontSizeBody * scale,
+          .variant = ButtonVariant::Default,
+          .minWidth = Style::controlHeightSm * scale,
+          .minHeight = Style::controlHeightSm * scale,
+          .padding = Style::spaceXs * scale,
+          .radius = Style::scaledRadiusMd(scale),
+          .onClick = [this]() { toggleFavoriteForPath(currentWallpaperPathForSelection()); },
+      })
+  );
+  if (m_favoriteCurrentButton != nullptr) {
+    m_favoriteCurrentButton->setTooltip(i18n::tr("wallpaper.panel.favorite-current"));
+  }
+
   toolbar->addChild(ui::spacer());
 
   toolbar->addChild(
@@ -901,6 +918,7 @@ void WallpaperPanel::onClose() {
   m_title = nullptr;
   m_backButton = nullptr;
   m_monitorSelect = nullptr;
+  m_favoriteCurrentButton = nullptr;
   m_filterInput = nullptr;
   m_flattenToggle = nullptr;
   m_flattenLabel = nullptr;
@@ -1086,6 +1104,11 @@ std::string WallpaperPanel::displayNameForWallpaperPath(std::string_view path) {
 void WallpaperPanel::syncBrowseChrome() {
   if (m_backButton != nullptr) {
     m_backButton->setVisible(!m_navStack.empty());
+  }
+  if (m_favoriteCurrentButton != nullptr && m_config != nullptr) {
+    const std::string current = currentWallpaperPathForSelection();
+    m_favoriteCurrentButton->setEnabled(!current.empty());
+    m_favoriteCurrentButton->setGlyph(m_config->isWallpaperFavorite(current) ? "star-filled" : "star");
   }
   syncThemeControls();
 }
@@ -1409,6 +1432,7 @@ void WallpaperPanel::applyWallpaperPath(const std::string& path, const Wallpaper
       choice.connector.empty() ? std::optional<std::string>{} : std::optional<std::string>{choice.connector};
   m_config->applyWallpaperSelection(connector, path, applyTheme, allMonitorConnectors());
   rebindGrid();
+  syncBrowseChrome();
 }
 
 const WallpaperFavorite* WallpaperPanel::favoriteThemeToApply(std::string_view path) const {
