@@ -26,6 +26,9 @@ namespace settings {
   struct SettingsPluginsContext {
     float scale = 1.0F;
     std::string_view selectedSection;
+    // In page search query and empty means no filtering.
+    std::string_view searchQuery;
+    std::function<void(std::string)> setSearchQuery;
     std::vector<scripting::PluginStatus> plugins;
     std::vector<PluginSourceConfig> sources;
     bool searchActive = false;
