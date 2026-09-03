@@ -849,7 +849,6 @@ namespace settings {
             .scrollToTop = ctx.scrollContentToTop,
         }
     );
-    // Collect before the header so the update badge counts the visible rows.
     std::vector<scripting::PluginStatus> plugins;
     plugins.reserve(ctx.plugins.size());
     for (const auto& plugin : ctx.plugins) {
@@ -857,6 +856,10 @@ namespace settings {
         plugins.push_back(plugin);
       }
     }
+    // The update action covers every installed plugin, so count the badge before filtering.
+    const int updatesAvailable =
+        static_cast<int>(std::ranges::count_if(plugins, &scripting::PluginStatus::updateAvailable));
+    const bool hasInstalledPlugins = !plugins.empty();
     // In page search narrows the list and empty query keeps every plugin.
     if (!ctx.searchQuery.empty()) {
       std::erase_if(plugins, [&](const scripting::PluginStatus& plugin) {
@@ -888,7 +891,7 @@ namespace settings {
     pluginsHeader->addChild(
         ui::input({
             .out = &pluginSearchInput,
-            .value = std::string(ctx.searchQuery),
+            .value = ctx.searchQuery,
             .placeholder = i18n::tr("settings.plugins.plugins.search-placeholder"),
             .fontSize = Style::fontSizeBody * scale,
             .controlHeight = Style::controlHeight * scale,
@@ -902,10 +905,10 @@ namespace settings {
             },
         })
     );
-    pluginSearchInput->inputArea()->setTabFocusKey("settings.plugins.search");
+    if (pluginSearchInput != nullptr && pluginSearchInput->inputArea() != nullptr) {
+      pluginSearchInput->inputArea()->setTabFocusKey("settings.plugins.search");
+    }
     pluginsHeader->addChild(ui::spacer());
-    const int updatesAvailable =
-        static_cast<int>(std::ranges::count_if(plugins, &scripting::PluginStatus::updateAvailable));
     if (updatesAvailable > 0 && ctx.updateAll) {
       pluginsHeader->addChild(
           ui::button({
@@ -947,8 +950,10 @@ namespace settings {
     std::ranges::sort(plugins, [&](const auto& a, const auto& b) {
       const std::string_view aName = pluginDisplayName(a);
       const std::string_view bName = pluginDisplayName(b);
-      if (aName != bName) {
-        return aName < bName;
+      if (!StringUtils::equalsInsensitive(aName, bName)) {
+        return std::ranges::lexicographical_compare(aName, bName, [](char x, char y) {
+          return std::tolower(static_cast<unsigned char>(x)) < std::tolower(static_cast<unsigned char>(y));
+        });
       }
       if (a.source != b.source) {
         return pluginSourceLess(a.source, b.source);
@@ -961,8 +966,8 @@ namespace settings {
         pluginsBody->addChild(pluginDeleteConfirmPanel(plugin, ctx, scale));
       }
     }
-    if (!ctx.pluginsLoading && !ctx.plugins.empty() && plugins.empty() && !ctx.searchQuery.empty()) {
-      pluginsBody->addChild(makeLabel(
+    if (!ctx.pluginsLoading && hasInstalledPlugins && plugins.empty() && !ctx.searchQuery.empty()) {
+      section->addChild(makeLabel(
           i18n::tr("settings.plugins.plugins.search-empty", "query", ctx.searchQuery), Style::fontSizeCaption * scale,
           ColorRole::OnSurfaceVariant
       ));
