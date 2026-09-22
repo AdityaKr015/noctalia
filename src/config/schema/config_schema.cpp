@@ -61,6 +61,30 @@ namespace noctalia::config::schema {
     return s;
   }
 
+  namespace {
+    // Concrete ColorSpec stored as a config string; always emitted. A present
+    // non-string value is a hard error (mirrors colorStringValue).
+    // Define before all the schema, so colorField can be use when needs.
+    template <typename Struct> Field<Struct> colorField(ColorSpec Struct::* member, std::string_view key) {
+      return custom<Struct>(
+          key,
+          [member, key](const toml::table& tbl, Struct& out, std::string_view parentPath, Diagnostics&) {
+            if (!tbl.contains(key)) {
+              return;
+            }
+            auto v = tbl[key].value<std::string>();
+            if (!v) {
+              throw std::runtime_error(joinPath(parentPath, key) + ": expected string ColorSpec");
+            }
+            out.*member = colorSpecFromConfigString(*v, joinPath(parentPath, key));
+          },
+          [member, key](toml::table& tbl, const Struct& in) {
+            tbl.insert_or_assign(key, colorSpecToConfigString(in.*member));
+          }
+      );
+    }
+  } // namespace
+
   const Schema<OsdConfig>& osdSchema() {
     static const Schema<OsdConfig> s = {
         field(&OsdConfig::enabled, "enabled"),
@@ -242,30 +266,6 @@ namespace noctalia::config::schema {
     };
     return s;
   }
-
-  namespace {
-    // Concrete ColorSpec stored as a config string; always emitted. A present
-    // non-string value is a hard error (mirrors colorStringValue).
-    // Define before notificationSchema to use colorField
-    template <typename Struct> Field<Struct> colorField(ColorSpec Struct::* member, std::string_view key) {
-      return custom<Struct>(
-          key,
-          [member, key](const toml::table& tbl, Struct& out, std::string_view parentPath, Diagnostics&) {
-            if (!tbl.contains(key)) {
-              return;
-            }
-            auto v = tbl[key].value<std::string>();
-            if (!v) {
-              throw std::runtime_error(joinPath(parentPath, key) + ": expected string ColorSpec");
-            }
-            out.*member = colorSpecFromConfigString(*v, joinPath(parentPath, key));
-          },
-          [member, key](toml::table& tbl, const Struct& in) {
-            tbl.insert_or_assign(key, colorSpecToConfigString(in.*member));
-          }
-      );
-    }
-  } // namespace
 
   const Schema<NotificationConfig>& notificationSchema() {
     static const Schema<NotificationConfig> s = {
