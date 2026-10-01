@@ -1322,6 +1322,11 @@ if build_tests
     dependencies: noctalia_core_dep,
     override_options: ['b_ndebug=false'],
   )
+  tray_registration_integration_exe = executable('tray_registration_integration_test',
+    sources: files('tests/tray_registration_integration_test.cpp'),
+    dependencies: noctalia_core_dep,
+    override_options: ['b_ndebug=false'],
+  )
   dbus_run_session = find_program('dbus-run-session', required: false)
   if dbus_run_session.found()
     test('upower_charge_limit_integration',
@@ -1338,6 +1343,13 @@ if build_tests
       args: ['--', secret_collection_probe_integration_exe.full_path()],
       depends: secret_collection_probe_integration_exe,
     )
+    foreach mode : ['registration', 'discovery']
+      test('tray_' + mode + '_integration',
+        dbus_run_session,
+        args: ['--', tray_registration_integration_exe.full_path(), mode],
+        depends: tray_registration_integration_exe,
+      )
+    endforeach
   endif
 
   bluetooth_property_integration_exe = executable('bluetooth_property_integration_test',
