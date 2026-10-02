@@ -1327,6 +1327,11 @@ if build_tests
     dependencies: noctalia_core_dep,
     override_options: ['b_ndebug=false'],
   )
+  fingerprint_integration_exe = executable('fingerprint_authenticator_integration_test',
+    sources: files('tests/fingerprint_authenticator_integration_test.cpp'),
+    dependencies: noctalia_core_dep,
+    override_options: ['b_ndebug=false'],
+  )
   dbus_run_session = find_program('dbus-run-session', required: false)
   if dbus_run_session.found()
     test('upower_charge_limit_integration',
@@ -1350,6 +1355,15 @@ if build_tests
         depends: tray_registration_integration_exe,
       )
     endforeach
+    test('fingerprint_authenticator_integration',
+      dbus_run_session,
+      args: [
+        '--', 'sh', '-c',
+        'export DBUS_SYSTEM_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS"; exec "$1"',
+        'sh', fingerprint_integration_exe.full_path(),
+      ],
+      depends: fingerprint_integration_exe,
+    )
   endif
 
   bluetooth_property_integration_exe = executable('bluetooth_property_integration_test',
