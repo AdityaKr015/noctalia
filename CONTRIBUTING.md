@@ -56,8 +56,13 @@ Direct project dependencies are listed below; transitive dependencies are owned 
 
 ## Code Style
 
-This project uses [clang-format](https://clang.llvm.org/docs/ClangFormat.html) for formatting. Run `just format`
-before committing.
+This project uses [clang-format](https://clang.llvm.org/docs/ClangFormat.html) 22 for formatting. Run `just format`
+before committing and `just format-check` to run the same check as CI, covering both `src/` and `tests/`.
+Both recipes reject other formatter major versions and print the version in use.
+
+Install `clang22` on Arch or `clang-tools-extra` on Fedora 44. If your distribution installs Clang 22 outside the default
+PATH, prepend its binary directory when running either recipe, for example
+`PATH=/usr/lib/llvm22/bin:$PATH just format-check` on Arch. Keep editor formatting on Clang 22 as well.
 
 For editor integration, `just configure` creates a root `compile_commands.json` symlink to the selected Meson build
 directory. Run `just configure`, `just configure release`, or `just configure asan` for the build mode you want clangd
