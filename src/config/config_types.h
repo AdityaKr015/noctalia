@@ -636,6 +636,51 @@ constexpr EnumOption<DockLauncherPosition> kDockLauncherPositions[] = {
     {DockLauncherPosition::End, "end", "settings.options.dock-launcher-position.end"},
 };
 
+struct DockMonitorOverride {
+  // tableName is the TOML subtable key; match may be overridden explicitly.
+  std::string tableName;
+  std::string match;
+  std::optional<bool> enabled;
+  std::optional<DockEdge> position;
+  std::optional<bool> activeMonitorOnly;
+  std::optional<std::int32_t> iconSize;
+  std::optional<std::int32_t> mainAxisPadding;
+  std::optional<std::int32_t> crossAxisPadding;
+  std::optional<std::int32_t> itemSpacing;
+  std::optional<float> backgroundOpacity;
+  std::optional<ColorSpec> border;
+  std::optional<float> borderWidth;
+  std::optional<std::int32_t> radius;
+  std::optional<std::int32_t> radiusTopLeft;
+  std::optional<std::int32_t> radiusTopRight;
+  std::optional<std::int32_t> radiusBottomLeft;
+  std::optional<std::int32_t> radiusBottomRight;
+  std::optional<bool> concaveEdgeCorners;
+  std::optional<std::int32_t> marginEnds;
+  std::optional<std::int32_t> marginEdge;
+  std::optional<bool> shadow;
+  std::optional<bool> showRunning;
+  std::optional<bool> autoHide;
+  std::optional<bool> smartAutoHide;
+  std::optional<std::string> layer;
+  std::optional<bool> reserveSpace;
+  std::optional<float> activeScale;
+  std::optional<float> inactiveScale;
+  std::optional<bool> magnification;
+  std::optional<float> magnificationScale;
+  std::optional<float> activeOpacity;
+  std::optional<float> inactiveOpacity;
+  std::optional<bool> showDots;
+  std::optional<bool> showInstanceCount;
+  std::optional<DockLauncherPosition> launcherPosition;
+  std::optional<std::string> launcherIcon;
+  std::optional<std::string> launcherCustomImage;
+  std::optional<bool> launcherCustomImageColorize;
+  std::optional<std::vector<std::string>> pinned;
+
+  bool operator==(const DockMonitorOverride&) const = default;
+};
+
 struct DockConfig {
   bool enabled = false; // opt-in; dock is hidden by default
   DockEdge position = DockEdge::Bottom;
@@ -677,9 +722,11 @@ struct DockConfig {
   std::string launcherCustomImage = "";     // image path; overrides launcherIcon glyph when set
   bool launcherCustomImageColorize = false; // tint the custom image with the icon color role
   std::vector<std::string> pinned;          // desktop entry IDs to always show
-  std::vector<std::string> monitors;        // connector names to show on; empty = all outputs
+  std::vector<DockMonitorOverride> monitorOverrides;
   bool operator==(const DockConfig&) const = default;
 };
+
+[[nodiscard]] DockConfig resolveDockMonitorOverride(const DockConfig& base, const DockMonitorOverride& override);
 
 struct DesktopWidgetsGridState {
   bool visible = true;

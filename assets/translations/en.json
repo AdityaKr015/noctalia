@@ -2165,10 +2165,6 @@
         "main-axis-padding": {
           "description": "Inner padding at the ends of the icon row (before the first and after the last icon)"
         },
-        "monitors": {
-          "description": "Choose which monitors show the dock (leave empty for all); active-monitor filtering applies within these monitors",
-          "label": "Monitors"
-        },
         "pinned-apps": {
           "description": "Desktop entry IDs of apps pinned to the dock",
           "label": "Pinned Apps"

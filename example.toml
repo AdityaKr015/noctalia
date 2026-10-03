@@ -449,6 +449,19 @@ launcher_icon       = "grid-dots"  # Tabler glyph name
 active_monitor_only = false
 pinned              = []            # e.g. ["firefox", "code", "kitty"]
 
+# Per-monitor override example; first match wins and omitted fields inherit [dock]:
+# [dock.monitor.laptop]
+# match               = "eDP-1"
+# enabled             = true
+# icon_size           = 40
+# magnification_scale = 1.3
+# pinned              = ["firefox", "org.gnome.Nautilus"]
+#
+# [dock.monitor.external]
+# match    = "DELL"                 # a word-boundary token in the output description
+# position = "left"
+# enabled  = false
+
 # ── Desktop Widgets ───────────────────────────────────────────────────────────
 
 [desktop_widgets]

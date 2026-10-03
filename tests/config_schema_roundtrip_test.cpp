@@ -418,7 +418,16 @@ location = "https://example.invalid/bad"
     c.dock.radiusBottomRight = 16;
     c.dock.launcherPosition = DockLauncherPosition::Start;
     c.dock.pinned = {"firefox.desktop"};
-    c.dock.monitors = {"DP-1"};
+    c.dock.monitorOverrides = {DockMonitorOverride{
+        .tableName = "laptop",
+        .match = "eDP-1",
+        .enabled = false,
+        .position = DockEdge::Left,
+        .iconSize = 36,
+        .autoHide = true,
+        .launcherPosition = DockLauncherPosition::End,
+        .pinned = std::vector<std::string>{"org.gnome.Nautilus.desktop"},
+    }};
     c.brightness.enableDdcutil = true;
     c.brightness.ddcutilIgnoreMmids = {"ABC123"};
     c.brightness.monitorOverrides = {
