@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -68,3 +69,8 @@ private:
   bool m_initialSyncDone = false;
   ChangeCallback m_changeCallback;
 };
+
+// Single ext toplevel whose title matches exactly, skipping wlr-only entries. Returns
+// nullptr when zero or multiple match, so callers can report ambiguity instead of guessing.
+[[nodiscard]] ext_foreign_toplevel_handle_v1*
+uniqueExtHandleForTitle(std::span<const ToplevelInfo> windows, std::string_view title);

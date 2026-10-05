@@ -1128,6 +1128,28 @@ std::optional<std::string> CompositorPlatform::focusedCompositorWindowId() const
   return std::nullopt;
 }
 
+ext_foreign_toplevel_handle_v1*
+CompositorPlatform::extHandleForCompositorWindowId(const std::string_view windowId) const {
+  if (m_hyprlandToplevelMapping == nullptr || !m_hyprlandToplevelMapping->available()) {
+    return nullptr;
+  }
+  const auto normalized = compositors::hyprland::normalizeWindowId(windowId);
+  if (normalized.empty()) {
+    return nullptr;
+  }
+  auto* extHandle = m_hyprlandToplevelMapping->extHandleForWindowId(normalized);
+  if (extHandle == nullptr) {
+    return nullptr;
+  }
+  bool live = false;
+  m_wayland.visitExtToplevelHandles([&](ext_foreign_toplevel_handle_v1* handle) {
+    if (handle == extHandle) {
+      live = true;
+    }
+  });
+  return live ? extHandle : nullptr;
+}
+
 void CompositorPlatform::setWorkspaceChangeCallback(ChangeCallback callback) {
   m_workspaceChangeCallback = std::move(callback);
   m_lastWorkspaceModelSnapshot = workspaceModelSnapshot();

@@ -1200,6 +1200,7 @@ if build_tests
     'dock_pinned_apps',
     'enterprise_credentials',
     'event_link',
+    'ext_toplevel_capture_target',
     'fcitx_status',
     'freedesktop_key_file',
     'firefox_theme_manifest',
