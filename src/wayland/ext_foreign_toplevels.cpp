@@ -202,7 +202,7 @@ ext_foreign_toplevel_handle_v1*
 uniqueExtHandleForTitle(const std::span<const ToplevelInfo> windows, const std::string_view title) {
   ext_foreign_toplevel_handle_v1* matched = nullptr;
   for (const auto& window : windows) {
-    if (window.extHandle == nullptr || (!title.empty()) && window.title != title) {
+    if (window.extHandle == nullptr || (!title.empty() && window.title != title)) {
       continue;
     }
     if (matched != nullptr) {

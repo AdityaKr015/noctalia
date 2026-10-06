@@ -785,7 +785,10 @@ void ScreenshotService::registerIpc(IpcService& ipc, const ConfigService& config
       return "error: window capture is not available on this compositor\n";
     }
     if (overlayBusy()) {
-      return "error: a screenshot overlay is already active\n ";
+      return "error: a screenshot overlay is already active\n";
+    }
+    if (!m_toplevelCapture.busy()) {
+      return "error: a window capture is already in progress\n";
     }
     const auto target = resolveFocusedCaptureTarget();
     if (!target.has_value()) {
@@ -838,7 +841,7 @@ std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::r
   if (auto* handle = uniqueExtHandleForTitle(windows, focused->title); handle != nullptr) {
     return handle;
   }
-  return std::unexpected("cannot uniquely identify the focused window");
+  return std::unexpected("cannot uniquely identify the focused window: " + focused->title);
 }
 
 void ScreenshotService::captureWindow(ext_foreign_toplevel_handle_v1* handle, const OutputOptions& options) {
