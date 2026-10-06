@@ -552,6 +552,7 @@
       },
       "settings": {
         "album-art-background": "Album Art Background",
+        "album-art-blur": "Album Art Blur",
         "aspect-ratio": "Aspect Ratio",
         "audio-visualizer": "Audio Visualizer",
         "background": "Background",

@@ -25,6 +25,7 @@ public:
     bool shadow = true;
     bool hideWhenNoMedia = false;
     bool albumArtBackground = false;
+    int albumArtBlur = 24;
     bool audioVisualizer = false;
   };
 
@@ -70,6 +71,7 @@ private:
   bool m_shadow;
   bool m_hideWhenNoMedia = false;
   bool m_albumArtBackground = false;
+  int m_albumArtBlur = 24;
   bool m_audioVisualizerEnabled = false;
   bool m_editorPreview = false;
   bool m_visible = true;

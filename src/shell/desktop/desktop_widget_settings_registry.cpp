@@ -333,6 +333,9 @@ namespace desktop_settings {
       add(fontFamilySpec());
       add(boolSpec("shadow", true));
       add(boolSpec("album_art_background", false));
+      auto albumArtBlur = intSpec("album_art_blur", 24, 0.0, 96.0, 4.0);
+      albumArtBlur.visibleWhen = WidgetSettingVisibility{"album_art_background", {"true"}};
+      add(std::move(albumArtBlur));
       add(boolSpec("audio_visualizer", false));
       add(boolSpec("hide_when_no_media", false));
     } else if (type == "label") {

@@ -314,6 +314,7 @@ std::unique_ptr<DesktopWidget> DesktopWidgetFactory::create(
             .shadow = getBoolSetting(settings, "shadow", true),
             .hideWhenNoMedia = getBoolSetting(settings, "hide_when_no_media", false),
             .albumArtBackground = getBoolSetting(settings, "album_art_background", false),
+            .albumArtBlur = getIntSetting(settings, "album_art_blur", 24),
             .audioVisualizer = getBoolSetting(settings, "audio_visualizer", false),
         }
     );

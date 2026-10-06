@@ -25,8 +25,7 @@ namespace {
   constexpr float kPlayPauseSize = 40.0F;
   constexpr float kSpacing = 6.0F;
   constexpr float kBoxedHorizontalBreakpoint = 1.15F;
-  constexpr float kMinBackgroundBlurRadius = 48.0F;
-  constexpr float kMaxBackgroundBlurRadius = 128.0F;
+  constexpr int kMaxBackgroundBlurRadius = 96;
   constexpr int kMinBackgroundArtDecodeSize = 384;
   constexpr int kMaxArtworkDecodeSize = 1536;
   constexpr int kMaxBackgroundArtDecodeSize = 768;
@@ -38,11 +37,6 @@ namespace {
     constexpr int kStep = 64;
     const int rounded = static_cast<int>(std::ceil(std::max(1.0F, size) / static_cast<float>(kStep))) * kStep;
     return std::clamp(rounded, minimum, maximum);
-  }
-
-  int quantizeBlurRadius(float radius) {
-    constexpr int kStep = 8;
-    return static_cast<int>(std::round(radius / static_cast<float>(kStep))) * kStep;
   }
 
 } // namespace
@@ -59,7 +53,9 @@ DesktopMediaPlayerWidget::DesktopMediaPlayerWidget(
 )
     : m_mpris(mpris), m_httpClient(httpClient), m_spectrum(spectrum), m_vertical(options.vertical),
       m_color(options.color), m_shadow(options.shadow), m_hideWhenNoMedia(options.hideWhenNoMedia),
-      m_albumArtBackground(options.albumArtBackground), m_audioVisualizerEnabled(options.audioVisualizer) {}
+      m_albumArtBackground(options.albumArtBackground),
+      m_albumArtBlur(std::clamp(options.albumArtBlur, 0, kMaxBackgroundBlurRadius)),
+      m_audioVisualizerEnabled(options.audioVisualizer) {}
 
 DesktopMediaPlayerWidget::~DesktopMediaPlayerWidget() {
   if (m_spectrum != nullptr && m_spectrumListenerId != 0) {
@@ -237,6 +233,14 @@ bool DesktopMediaPlayerWidget::applySetting(
     }
     return false;
   }
+  if (key == "album_art_blur") {
+    if (const auto* v = std::get_if<std::int64_t>(&value)) {
+      m_albumArtBlur = std::clamp(static_cast<int>(*v), 0, kMaxBackgroundBlurRadius);
+      requestLayout();
+      return true;
+    }
+    return false;
+  }
   if (key == "audio_visualizer") {
     if (const auto* v = std::get_if<bool>(&value)) {
       m_audioVisualizerEnabled = *v;
@@ -353,10 +357,7 @@ void DesktopMediaPlayerWidget::refreshArtworkTextures(Renderer& renderer) {
   const float cardHeight = card->height();
   const int backgroundTarget =
       quantizeDecodeSize(std::max(cardWidth, cardHeight), kMinBackgroundArtDecodeSize, kMaxBackgroundArtDecodeSize);
-  const float scaledBlur =
-      std::clamp(std::min(cardWidth, cardHeight) * 0.28F, kMinBackgroundBlurRadius, kMaxBackgroundBlurRadius);
-  const int blurRadius = quantizeBlurRadius(scaledBlur);
-  if (!m_backgroundArtwork->setSourceFileBlurred(renderer, m_artPath, backgroundTarget, blurRadius, true)) {
+  if (!m_backgroundArtwork->setSourceFileBlurred(renderer, m_artPath, backgroundTarget, m_albumArtBlur, true)) {
     m_backgroundArtwork->clear(renderer);
   }
 }
