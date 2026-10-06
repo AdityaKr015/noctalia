@@ -2,6 +2,7 @@
 
 #include "wayland/wayland_toplevels.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <span>
@@ -70,7 +71,11 @@ private:
   ChangeCallback m_changeCallback;
 };
 
-// Single ext toplevel whose title matches exactly, skipping wlr-only entries. Returns
-// nullptr when zero or multiple match, so callers can report ambiguity instead of guessing.
-[[nodiscard]] ext_foreign_toplevel_handle_v1*
+// Unique ext toplevel with an exact title match, skipping wlr-only entries. handle is
+// nullptr on zero or multiple matches; matchCount says which.
+struct ExtToplevelTitleMatch {
+  ext_foreign_toplevel_handle_v1* handle = nullptr;
+  std::size_t matchCount = 0;
+};
+[[nodiscard]] ExtToplevelTitleMatch
 uniqueExtHandleForTitle(std::span<const ToplevelInfo> windows, std::string_view title);

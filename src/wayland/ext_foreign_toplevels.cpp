@@ -198,19 +198,21 @@ std::vector<ToplevelInfo> WaylandExtForeignToplevels::windowsWithoutAppId() cons
   return out;
 }
 
-ext_foreign_toplevel_handle_v1*
+ExtToplevelTitleMatch
 uniqueExtHandleForTitle(const std::span<const ToplevelInfo> windows, const std::string_view title) {
-  ext_foreign_toplevel_handle_v1* matched = nullptr;
+  ExtToplevelTitleMatch match;
   for (const auto& window : windows) {
     if (window.extHandle == nullptr || (!title.empty() && window.title != title)) {
       continue;
     }
-    if (matched != nullptr) {
-      return nullptr;
+    ++match.matchCount;
+    if (match.matchCount > 1) {
+      match.handle = nullptr;
+      continue;
     }
-    matched = window.extHandle;
+    match.handle = window.extHandle;
   }
-  return matched;
+  return match;
 }
 
 void WaylandExtForeignToplevels::onToplevelCreated(ext_foreign_toplevel_handle_v1* handle) {

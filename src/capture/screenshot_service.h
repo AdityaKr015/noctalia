@@ -176,8 +176,7 @@ private:
       std::optional<std::filesystem::path> destPath
   );
   [[nodiscard]] wl_output* preferredCaptureOutput() const;
-  // Focused window via the compositor's window id when available (Hyprland), otherwise
-  // the wlr activated toplevel joined to the ext list by title and app id.
+  // Focused window: compositor window id (Hyprland) or wlr activated toplevel matched by title and app id.
   [[nodiscard]] std::expected<ext_foreign_toplevel_handle_v1*, std::string> resolveFocusedCaptureTarget() const;
   [[nodiscard]] std::filesystem::path outputDirectory(const OutputOptions& options) const;
   [[nodiscard]] std::filesystem::path

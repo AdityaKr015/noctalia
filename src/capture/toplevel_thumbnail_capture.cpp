@@ -63,7 +63,7 @@ namespace {
         || transform == WL_OUTPUT_TRANSFORM_FLIPPED_270;
   }
 
-  // Zero bounds mean native size; the identity-scale path keeps the conversion to one pass.
+  // Zero bounds request native size.
   [[nodiscard]] int effectiveCaptureBound(int bound) noexcept {
     return bound > 0 ? bound : std::numeric_limits<int>::max();
   }
@@ -91,8 +91,7 @@ std::optional<ScreencopyImage> capture::makeToplevelThumbnail(
        static_cast<float>(maxHeight) / static_cast<float>(orientedHeight)}
   );
   if (scale >= 1.0F) {
-    // Identity scale: the general loop's lerps collapse to the exact source pixel, so
-    // copy with the same per-pixel conversion in one pass instead of four taps.
+    // Scale 1.0: the loop's lerps collapse to the source pixel, so copy in one pass.
     ScreencopyImage image;
     image.width = width;
     image.height = height;
@@ -360,7 +359,7 @@ bool ToplevelThumbnailCapture::available() const noexcept {
 void ToplevelThumbnailCapture::capture(
     ext_foreign_toplevel_handle_v1* handle, int maxWidth, int maxHeight, CompletionCallback onComplete
 ) {
-  // Zero bounds on both axes request native size; positive bounds downscale as before.
+  // Zero bounds on both axes request native size.
   const bool nativeSize = maxWidth == 0 && maxHeight == 0;
   if (busy() || !available() || handle == nullptr || (!nativeSize && (maxWidth <= 0 || maxHeight <= 0))) {
     if (onComplete) {

@@ -33,9 +33,12 @@ namespace {
         window(handleA, "Editor"),
         window(handleB, "Terminal"),
     };
-    return expect(uniqueExtHandleForTitle(windows, "Editor") == handleA, "unique title should resolve to its handle")
-        && expect(uniqueExtHandleForTitle(windows, "terminal") == nullptr, "title match should be exact")
-        && expect(uniqueExtHandleForTitle(windows, "Missing") == nullptr, "unknown title should not resolve");
+    const auto editor = uniqueExtHandleForTitle(windows, "Editor");
+    const auto caseMismatch = uniqueExtHandleForTitle(windows, "terminal");
+    const auto missing = uniqueExtHandleForTitle(windows, "Missing");
+    return expect(editor.handle == handleA && editor.matchCount == 1, "unique title should resolve to its handle")
+        && expect(caseMismatch.handle == nullptr && caseMismatch.matchCount == 0, "title match should be exact")
+        && expect(missing.handle == nullptr && missing.matchCount == 0, "unknown title should not resolve");
   }
 
   bool rejectsAmbiguity() {
@@ -43,8 +46,12 @@ namespace {
         window(handleA, "Editor"),
         window(handleB, "Editor"),
     };
-    return expect(uniqueExtHandleForTitle(windows, "Editor") == nullptr, "two same-title windows should be ambiguous")
-        && expect(uniqueExtHandleForTitle(windows, "") == nullptr, "empty title should not resolve among many");
+    const auto ambiguous = uniqueExtHandleForTitle(windows, "Editor");
+    const auto empty = uniqueExtHandleForTitle(windows, "");
+    return expect(
+               ambiguous.handle == nullptr && ambiguous.matchCount == 2, "two same-title windows should be ambiguous"
+           )
+        && expect(empty.handle == nullptr && empty.matchCount == 2, "empty title should not resolve among many");
   }
 
   bool ignoresEntriesWithoutExtHandle() {
@@ -52,13 +59,16 @@ namespace {
         window(nullptr, "Editor"),
         window(handleA, "Editor"),
     };
-    return expect(uniqueExtHandleForTitle(windows, "Editor") == handleA, "wlr-only entries should be ignored");
+    const auto match = uniqueExtHandleForTitle(windows, "Editor");
+    return expect(match.handle == handleA && match.matchCount == 1, "wlr-only entries should be ignored");
   }
 
   bool emptySelection() {
     const std::vector<ToplevelInfo> windows{window(handleA, "Editor")};
-    return expect(uniqueExtHandleForTitle(windows, "") == handleA, "empty title accepts the only candidate")
-        && expect(uniqueExtHandleForTitle({}, "Editor") == nullptr, "no candidates should not resolve");
+    const auto only = uniqueExtHandleForTitle(windows, "");
+    const auto none = uniqueExtHandleForTitle({}, "Editor");
+    return expect(only.handle == handleA && only.matchCount == 1, "empty title accepts the only candidate")
+        && expect(none.handle == nullptr && none.matchCount == 0, "no candidates should not resolve");
   }
 } // namespace
 

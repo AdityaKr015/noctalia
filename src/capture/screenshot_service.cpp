@@ -787,7 +787,7 @@ void ScreenshotService::registerIpc(IpcService& ipc, const ConfigService& config
     if (overlayBusy()) {
       return "error: a screenshot overlay is already active\n";
     }
-    if (!m_toplevelCapture.busy()) {
+    if (m_toplevelCapture.busy()) {
       return "error: a window capture is already in progress\n";
     }
     const auto target = resolveFocusedCaptureTarget();
@@ -838,10 +838,14 @@ std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::r
   const std::string appIdLower = StringUtils::toLower(focused->appId);
   const auto windows =
       appIdLower.empty() ? m_wayland.extWindowsWithoutAppId() : m_wayland.extWindowsForApp(appIdLower, appIdLower);
-  if (auto* handle = uniqueExtHandleForTitle(windows, focused->title); handle != nullptr) {
-    return handle;
+  const auto match = uniqueExtHandleForTitle(windows, focused->title);
+  if (match.handle != nullptr) {
+    return match.handle;
   }
-  return std::unexpected("cannot uniquely identify the focused window: " + focused->title);
+  if (match.matchCount == 0) {
+    return std::unexpected("no window matches the focused window: " + focused->title);
+  }
+  return std::unexpected("multiple windows match the focused window: " + focused->title);
 }
 
 void ScreenshotService::captureWindow(ext_foreign_toplevel_handle_v1* handle, const OutputOptions& options) {
