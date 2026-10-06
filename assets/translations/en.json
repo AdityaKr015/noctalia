@@ -551,7 +551,9 @@
         "select-sticker-image": "Select Sticker Image"
       },
       "settings": {
+        "album-art-background": "Album Art Background",
         "aspect-ratio": "Aspect Ratio",
+        "audio-visualizer": "Audio Visualizer",
         "background": "Background",
         "background-color": "Color",
         "background-opacity": "Opacity",

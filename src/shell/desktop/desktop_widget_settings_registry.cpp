@@ -332,6 +332,8 @@ namespace desktop_settings {
       add(colorSpec("color", "on_surface"));
       add(fontFamilySpec());
       add(boolSpec("shadow", true));
+      add(boolSpec("album_art_background", false));
+      add(boolSpec("audio_visualizer", false));
       add(boolSpec("hide_when_no_media", false));
     } else if (type == "label") {
       add(stringSpec("title", "Title"));
