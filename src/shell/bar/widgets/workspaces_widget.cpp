@@ -467,7 +467,9 @@ void WorkspacesWidget::rebuild(Renderer& renderer) {
     const auto& entry = entries[i];
 
     if (entry.showLabel) {
-      const TextMetrics tm = renderer.measureText(entry.label, labelFontSize, configuredFontWeight);
+      const TextMetrics tm = renderer.measureText(
+          entry.label, labelFontSize, configuredFontWeight, 0.0F, 0, TextAlign::Start, labelFontFamily()
+      );
       slot.textWidth = std::max(tm.right - tm.left, tm.inkRight - tm.inkLeft);
       slot.textHeight = tm.bottom - tm.top;
     }
@@ -498,7 +500,9 @@ void WorkspacesWidget::rebuild(Renderer& renderer) {
         slot.activeWidth = slot.inactiveWidth;
       }
       if (entry.showLabel) {
-        const TextMetrics tm = renderer.measureText(entry.label, labelFontSize, configuredFontWeight);
+        const TextMetrics tm = renderer.measureText(
+            entry.label, labelFontSize, configuredFontWeight, 0.0F, 0, TextAlign::Start, labelFontFamily()
+        );
         maxLabelHeight = std::max(maxLabelHeight, tm.bottom - tm.top);
       }
       continue;
@@ -861,7 +865,8 @@ void WorkspacesWidget::recalculateItemMetrics(
   float textWidth = 0.0F;
   float textHeight = 0.0F;
   if (item.showLabel) {
-    const TextMetrics tm = renderer.measureText(label, labelFontSize, configuredFontWeight);
+    const TextMetrics tm =
+        renderer.measureText(label, labelFontSize, configuredFontWeight, 0.0F, 0, TextAlign::Start, labelFontFamily());
     textWidth = std::max(tm.right - tm.left, tm.inkRight - tm.inkLeft);
     textHeight = tm.bottom - tm.top;
   }
