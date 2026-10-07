@@ -1454,8 +1454,14 @@ void Application::initBrightnessAndPipewire() {
       }
 
       const auto& audio = m_configService.config().audio;
-      m_soundPlayer->setVolume(audio.enableSounds ? audio.soundVolume : 0.0F);
+      m_soundPlayer->setShellSoundsEnabled(audio.enableSounds);
+      m_soundPlayer->setVolume(audio.soundVolume);
       m_soundPlayer->setTheme(audio.soundTheme.empty() ? "freedesktop" : audio.soundTheme);
+      m_soundPlayer->setEventEnabled(SoundPlayer::kEventVolumeChange, audio.enableVolumeSounds);
+      m_soundPlayer->setEventEnabled(SoundPlayer::kEventNotification, audio.enableNotificationSounds);
+      m_soundPlayer->setEventEnabled(SoundPlayer::kEventPowerPlug, audio.enablePowerSounds);
+      m_soundPlayer->setEventEnabled(SoundPlayer::kEventPowerUnplug, audio.enablePowerSounds);
+      m_soundPlayer->setEventEnabled(SoundPlayer::kEventScreenCapture, audio.enableScreenshotSounds);
     };
     applySoundConfig();
     m_configService.addReloadCallback(
