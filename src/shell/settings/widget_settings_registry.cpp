@@ -675,6 +675,7 @@ namespace settings {
     fontFamily = withGroup(std::move(fontFamily), "presentation");
 
     auto capsuleToggle = withGroup(boolSpec("capsule", false), "presentation");
+    capsuleToggle.schema.inheritsFromBar = true;
     auto capsuleFill = withGroup(colorSpec("capsule_fill", "", true), "presentation");
     capsuleFill.visibleWhen = capsuleOn;
 
