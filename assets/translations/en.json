@@ -226,7 +226,9 @@
       "auto": "Auto",
       "custom": "Custom",
       "inherit": "Inherit",
-      "off": "Off"
+      "inherit-value": "Inherit ({value})",
+      "off": "Off",
+      "on": "On"
     }
   },
   "control-center": {
@@ -1977,6 +1979,10 @@
         "show-on-workspace-switch": {
           "description": "Briefly reveal the bar when the active workspace changes",
           "label": "Show on Workspace Switch"
+        },
+        "show-tooltip": {
+          "description": "Show hover tooltips for widgets on this bar; a widget's own Show Tooltip setting overrides this",
+          "label": "Show Tooltips"
         },
         "start-widgets": {
           "description": "Widgets on the start (left/top) side of the bar",
@@ -4596,8 +4602,8 @@
           "label": "Show Temperature"
         },
         "show-tooltip": {
-          "description": "Show a workspace's full name on hover when its pill does not already display it",
-          "label": "Show Name Tooltip"
+          "description": "Show this widget's tooltip on hover",
+          "label": "Show Tooltip"
         },
         "show-unlock-hint": {
           "description": "Show the status card above the login box for unlock hints and auth prompts; errors and Caps Lock warnings still appear when this is off",

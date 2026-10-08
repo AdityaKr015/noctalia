@@ -74,8 +74,7 @@ WorkspacesWidget::WorkspacesWidget(
     : m_platform(platform), m_configService(config), m_output(output), m_labelSource(options.labelSource),
       m_showLabels(options.showLabels), m_maxLabelChars(options.maxLabelChars),
       m_labelsOnlyWhenOccupied(options.labelsOnlyWhenOccupied), m_showIcons(options.showIcons),
-      m_showTooltip(options.showTooltip), m_hideWhenEmpty(options.hideWhenEmpty),
-      m_showAllOutputs(options.showAllOutputs), m_pillScale(options.pillScale),
+      m_hideWhenEmpty(options.hideWhenEmpty), m_showAllOutputs(options.showAllOutputs), m_pillScale(options.pillScale),
       m_activePillSize(std::clamp(options.activePillSize, 0.25F, 8.0F)),
       m_inactivePillSize(std::clamp(options.inactivePillSize, 0.25F, 8.0F)), m_style(options.style),
       m_focusedOutputOnly(options.focusedOutputOnly), m_changeColorOnHover(options.changeColorOnHover),
@@ -1450,7 +1449,7 @@ WorkspacesWidget::workspaceTooltipText(const Workspace& workspace, const std::st
 }
 
 void WorkspacesWidget::syncItemTooltip(Item& item, const Workspace& workspace) {
-  if (item.area == nullptr || !m_showTooltip) {
+  if (item.area == nullptr) {
     return;
   }
 
