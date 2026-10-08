@@ -6,6 +6,7 @@
 #include "ipc/ipc_service.h"
 #include "pipewire/audio_route_selection.h"
 #include "pipewire/pipewire_error.h"
+#include "pipewire/privacy_capture_classification.h"
 #include "pipewire/wireplumber_mixer.h"
 #include "util/string_utils.h"
 
@@ -593,10 +594,6 @@ namespace {
       "Audio/Source",
   });
 
-  constexpr auto kAudioCaptureConsumerClasses = std::to_array<std::string_view>({
-      "Stream/Input/Audio",
-  });
-
   constexpr auto kCameraSourceClasses = std::to_array<std::string_view>({
       "Video/Source",
   });
@@ -686,7 +683,12 @@ namespace {
   }
 
   [[nodiscard]] bool isAudioCaptureConsumer(const PipeWireService::NodeData& nd) {
-    return std::ranges::contains(kAudioCaptureConsumerClasses, nd.mediaClass) && !nd.streamCaptureSink;
+    return noctalia::pipewire::isPrivacyAudioCaptureConsumer({
+        .mediaClass = nd.mediaClass,
+        .linkGroup = nd.linkGroup,
+        .nodePassive = nd.nodePassive,
+        .streamCaptureSink = nd.streamCaptureSink,
+    });
   }
 
   [[nodiscard]] bool isCameraSource(const PipeWireService::NodeData& nd) {
