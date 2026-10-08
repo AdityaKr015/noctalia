@@ -3,6 +3,7 @@
 #include "core/inotify/inotify.h"
 #include "core/log.h"
 #include "i18n/language_tag.h"
+#include "util/file_utils.h"
 #include "util/string_utils.h"
 
 #include <algorithm>
@@ -506,17 +507,6 @@ namespace {
     return dirs;
   }
 
-  // follow_directory_symlink has no cycle detection, so a link pointing back up the tree would recurse until the
-  // kernel refuses the path. Walking each real directory at most once removes that.
-  bool claimDirectory(const fs::path& dir, std::unordered_set<std::string>& visited) {
-    std::error_code ec;
-    const auto resolved = fs::canonical(dir, ec);
-    if (ec) {
-      return false;
-    }
-    return visited.insert(resolved.string()).second;
-  }
-
   // Scans every applications directory. When `visitedDirs` is set, it receives each real directory the scan walked,
   // so the cache watches exactly what was scanned.
   std::vector<DesktopEntry> scanApplicationDirectories(std::string_view language, std::vector<fs::path>* visitedDirs) {
@@ -534,43 +524,29 @@ namespace {
         continue;
       }
 
-      std::unordered_set<std::string> claimedDirs;
-      claimDirectory(appDir, claimedDirs);
       if (visitedDirs != nullptr) {
         visitedDirs->push_back(appDir);
       }
 
-      constexpr auto options =
-          fs::directory_options::skip_permission_denied | fs::directory_options::follow_directory_symlink;
-      for (fs::recursive_directory_iterator it(appDir, options, ec), end; it != end; it.increment(ec)) {
-        if (ec) {
-          ec.clear();
-          continue;
-        }
-        if (it->is_directory(ec) && !ec) {
-          if (!claimDirectory(it->path(), claimedDirs)) {
-            it.disable_recursion_pending();
-          } else if (visitedDirs != nullptr) {
-            visitedDirs->push_back(it->path());
+      FileUtils::walkDirectoryTree(
+          appDir,
+          [visitedDirs](const fs::directory_entry& dir) {
+            if (visitedDirs != nullptr) {
+              visitedDirs->push_back(dir.path());
+            }
+            return true;
+          },
+          [&](const fs::directory_entry& file) {
+            std::error_code typeEc;
+            if (!file.is_regular_file(typeEc) || typeEc || file.path().extension() != ".desktop") {
+              return;
+            }
+            if (!seenIds.insert(file.path().stem().string()).second) {
+              return;
+            }
+            parseDesktopFile(file.path(), language, entries);
           }
-          continue;
-        }
-        ec.clear();
-        if (!it->is_regular_file(ec)) {
-          ec.clear();
-          continue;
-        }
-        if (it->path().extension() != ".desktop") {
-          continue;
-        }
-
-        std::string id = it->path().stem().string();
-        if (!seenIds.insert(id).second) {
-          continue;
-        }
-
-        parseDesktopFile(it->path(), language, entries);
-      }
+      );
     }
 
     // Collate lowercased names so ordering follows LC_COLLATE and stays case-insensitive under the C locale.
