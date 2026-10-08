@@ -55,6 +55,15 @@ namespace {
     return i18n::tr("time.duration.less-than-minute");
   }
 
+  // The graphic body has room for about four narrow characters, so durations of an hour or more use a clock-style
+  // "2:54" instead of "2h 54m"; shorter ones keep the compact "53m" form.
+  std::string formatGraphicDuration(std::int64_t seconds) {
+    if (seconds < 3600) {
+      return formatCompactDuration(seconds);
+    }
+    return std::format("{}:{:02}", seconds / 3600, (seconds % 3600) / 60);
+  }
+
 } // namespace
 
 BatteryWidget::BatteryWidget(UPowerService* upower, Options options)
@@ -72,14 +81,16 @@ std::string BatteryWidget::buildLabelText(int pct, const UPowerState& state) con
   }
 
   switch (m_labelContent) {
-  case BatteryLabelContent::Time:
+  case BatteryLabelContent::Time: {
+    const bool graphic = m_displayMode == BatteryDisplayMode::Graphic;
     if (state.state == BatteryState::Discharging && state.timeToEmpty > 0) {
-      return formatCompactDuration(state.timeToEmpty);
+      return graphic ? formatGraphicDuration(state.timeToEmpty) : formatCompactDuration(state.timeToEmpty);
     }
     if (state.state == BatteryState::Charging && state.timeToFull > 0) {
-      return formatCompactDuration(state.timeToFull);
+      return graphic ? formatGraphicDuration(state.timeToFull) : formatCompactDuration(state.timeToFull);
     }
     break;
+  }
   case BatteryLabelContent::Rate:
     if (state.energyRate > 0.0) {
       if (m_displayMode == BatteryDisplayMode::Graphic) {
