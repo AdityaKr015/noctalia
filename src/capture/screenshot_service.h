@@ -176,7 +176,9 @@ private:
       std::optional<std::filesystem::path> destPath
   );
   [[nodiscard]] wl_output* preferredCaptureOutput() const;
-  // Focused window: compositor window id (Hyprland) or wlr activated toplevel matched by title and app id.
+  // Focused window: compositor window id (Hyprland mapping or exact identity backend), else the
+  // wlr activated toplevel matched by title and app id. Exact-identity backends fail explicitly
+  // while the id join is pending instead of falling back to the title join.
   [[nodiscard]] std::expected<ext_foreign_toplevel_handle_v1*, std::string> resolveFocusedCaptureTarget() const;
   [[nodiscard]] std::filesystem::path outputDirectory(const OutputOptions& options) const;
   [[nodiscard]] std::filesystem::path

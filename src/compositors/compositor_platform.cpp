@@ -1130,14 +1130,16 @@ std::optional<std::string> CompositorPlatform::focusedCompositorWindowId() const
 
 ext_foreign_toplevel_handle_v1*
 CompositorPlatform::extHandleForCompositorWindowId(const std::string_view windowId) const {
-  if (m_hyprlandToplevelMapping == nullptr || !m_hyprlandToplevelMapping->available()) {
-    return nullptr;
+  ext_foreign_toplevel_handle_v1* extHandle = nullptr;
+  if (m_hyprlandToplevelMapping != nullptr && m_hyprlandToplevelMapping->available()) {
+    const auto normalized = compositors::hyprland::normalizeWindowId(windowId);
+    if (normalized.empty()) {
+      return nullptr;
+    }
+    extHandle = m_hyprlandToplevelMapping->extHandleForWindowId(normalized);
+  } else if (hasExactWindowIdentity()) {
+    extHandle = m_wayland.extHandleForIdentifier(windowId);
   }
-  const auto normalized = compositors::hyprland::normalizeWindowId(windowId);
-  if (normalized.empty()) {
-    return nullptr;
-  }
-  auto* extHandle = m_hyprlandToplevelMapping->extHandleForWindowId(normalized);
   if (extHandle == nullptr) {
     return nullptr;
   }

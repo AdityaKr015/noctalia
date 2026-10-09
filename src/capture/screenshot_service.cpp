@@ -825,10 +825,16 @@ void ScreenshotService::registerIpc(IpcService& ipc, const ConfigService& config
 }
 
 std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::resolveFocusedCaptureTarget() const {
-  if (auto focusedId = m_platform.focusedCompositorWindowId(); focusedId.has_value() && !focusedId->empty()) {
+  const auto focusedId = m_platform.focusedCompositorWindowId();
+  if (focusedId.has_value() && !focusedId->empty()) {
     if (auto* handle = m_platform.extHandleForCompositorWindowId(*focusedId); handle != nullptr) {
       return handle;
     }
+    if (m_platform.hasExactWindowIdentity()) {
+      return std::unexpected("focused window identity is not available yet: " + *focusedId);
+    }
+  } else if (m_platform.hasExactWindowIdentity()) {
+    return std::unexpected("no focused window identity reported by the compositor");
   }
 
   const auto focused = m_wayland.activeToplevel();

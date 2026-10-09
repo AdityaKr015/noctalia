@@ -111,6 +111,12 @@ int main() {
   });
   TEST_CHECK(visited == 1);
 
+  // Exact identifier join reads committed state only
+  TEST_CHECK(extToplevels.extHandleForIdentifier("49") == extHandle);
+  TEST_CHECK(extToplevels.extHandleForIdentifier("50") == nullptr);
+  TEST_CHECK(extToplevels.extHandleForIdentifier("999") == nullptr);
+  TEST_CHECK(extToplevels.extHandleForIdentifier("") == nullptr);
+
   // Later property batches also remain hidden until their own `done`.
   extToplevels.onHandleTitle(extHandle, "renamed");
   extToplevels.onHandleIdentifier(extHandle, "50");
@@ -141,11 +147,14 @@ int main() {
   TEST_CHECK(extWindows.size() == 2);
   TEST_CHECK(extWindows[0].identifier == "50");
   TEST_CHECK(extWindows[1].identifier == "52");
+  TEST_CHECK(extToplevels.extHandleForIdentifier("50") == extHandle);
+  TEST_CHECK(extToplevels.extHandleForIdentifier("52") == duplicateHandle);
 
   // State removal is safe for both ready and not-yet-ready handles.
   extToplevels.removeHandle(duplicateHandle);
   TEST_CHECK(changeCount == 4);
   TEST_CHECK(extToplevels.windowsForApp("com.mitchellh.ghostty", "ghostty").size() == 1);
+  TEST_CHECK(extToplevels.extHandleForIdentifier("52") == nullptr);
   auto* pendingHandle = reinterpret_cast<ext_foreign_toplevel_handle_v1*>(0x32);
   extToplevels.m_handles.try_emplace(pendingHandle, WaylandExtForeignToplevels::ToplevelState{});
   extToplevels.removeHandle(pendingHandle);

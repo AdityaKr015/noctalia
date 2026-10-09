@@ -198,6 +198,18 @@ std::vector<ToplevelInfo> WaylandExtForeignToplevels::windowsWithoutAppId() cons
   return out;
 }
 
+ext_foreign_toplevel_handle_v1* WaylandExtForeignToplevels::extHandleForIdentifier(std::string_view identifier) const {
+  if (identifier.empty()) {
+    return nullptr;
+  }
+  for (const auto& [handle, state] : m_handles) {
+    if (handle != nullptr && state.ready && state.committed.identifier == identifier) {
+      return handle;
+    }
+  }
+  return nullptr;
+}
+
 ExtToplevelTitleMatch
 uniqueExtHandleForTitle(const std::span<const ToplevelInfo> windows, const std::string_view title) {
   ExtToplevelTitleMatch match;
