@@ -29,7 +29,7 @@ public:
   [[nodiscard]] std::vector<ToplevelInfo>
   windowsForApp(const std::string& idLower, const std::string& wmClassLower) const;
   [[nodiscard]] std::vector<ToplevelInfo> windowsWithoutAppId() const;
-  // For the compositors who exposes window id (eg. Niri, Umbriel)
+  // Ready handle whose committed identifier matches; exact-identity backends (Niri, Umbriel) use their IPC window id.
   [[nodiscard]] ext_foreign_toplevel_handle_v1* extHandleForIdentifier(std::string_view identifier) const;
 
   template <typename Fn> void visitExtHandles(Fn&& fn) const {

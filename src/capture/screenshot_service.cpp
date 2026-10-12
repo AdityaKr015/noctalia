@@ -790,11 +790,15 @@ void ScreenshotService::registerIpc(IpcService& ipc, const ConfigService& config
     if (m_toplevelCapture.busy()) {
       return "error: a window capture is already in progress\n";
     }
+    const auto options = outputOptionsFromConfig(configService.config());
+    if (!options.annotate && !hasAnyOutput(options)) {
+      return "error: no screenshot output enabled\n";
+    }
     const auto target = resolveFocusedCaptureTarget();
     if (!target.has_value()) {
       return "error: " + target.error() + "\n";
     }
-    captureWindow(*target, outputOptionsFromConfig(configService.config()));
+    captureWindow(*target, options);
     return "ok\n";
   });
 

@@ -646,7 +646,7 @@ namespace noctalia::cli {
         "screenshot-region", "Start an interactive region screenshot", {}, {}, {}, {}, {}, false
     };
     inline constexpr Command screenshotWindow{
-        "screenshot-window", "Captures the current focused window", {}, {}, {}, {}, {}, false
+        "screenshot-window", "Capture the focused window", {}, {}, {}, {}, {}, false
     };
     inline constexpr Command session{"session", "Run a built-in session action", {}, {},
                                      {},        kMsgSessionPositionals,          {}, false};

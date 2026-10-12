@@ -3881,7 +3881,7 @@
             "label": "Region screenshot"
           },
           "screenshot-window": {
-            "description": "Capture the current focused window",
+            "description": "Capture the focused window",
             "label": "Window screenshot"
           },
           "session": {
