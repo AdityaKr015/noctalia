@@ -844,7 +844,21 @@ std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::r
   const std::string appIdLower = StringUtils::toLower(focused->appId);
   const auto windows =
       appIdLower.empty() ? m_wayland.extWindowsWithoutAppId() : m_wayland.extWindowsForApp(appIdLower, appIdLower);
-  const auto match = uniqueExtHandleForTitle(windows, focused->title);
+  const auto siblings = appIdLower.empty() ? m_wayland.windowsWithoutAppId(nullptr)
+                                           : m_wayland.windowsForApp(appIdLower, appIdLower, nullptr);
+  std::size_t preferredRank = kNoPreferredRank;
+  std::size_t rank = 0;
+  for (const auto& sibling : siblings) {
+    if (!focused->title.empty() && sibling.title != focused->title) {
+      continue;
+    }
+    if (sibling.handle == focused->handle) {
+      preferredRank = rank;
+      break;
+    }
+    ++rank;
+  }
+  const auto match = uniqueExtHandleForTitle(windows, focused->title, preferredRank);
   if (match.handle != nullptr) {
     return match.handle;
   }

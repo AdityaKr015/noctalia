@@ -210,19 +210,21 @@ ext_foreign_toplevel_handle_v1* WaylandExtForeignToplevels::extHandleForIdentifi
   return nullptr;
 }
 
-ExtToplevelTitleMatch
-uniqueExtHandleForTitle(const std::span<const ToplevelInfo> windows, const std::string_view title) {
+ExtToplevelTitleMatch uniqueExtHandleForTitle(
+    const std::span<const ToplevelInfo> windows, const std::string_view title, const std::size_t preferredRank
+) {
   ExtToplevelTitleMatch match;
   for (const auto& window : windows) {
     if (window.extHandle == nullptr || (!title.empty() && window.title != title)) {
       continue;
     }
-    ++match.matchCount;
-    if (match.matchCount > 1) {
-      match.handle = nullptr;
-      continue;
+    if (match.matchCount == 0 || match.matchCount == preferredRank) {
+      match.handle = window.extHandle;
     }
-    match.handle = window.extHandle;
+    ++match.matchCount;
+  }
+  if (match.matchCount > 1 && preferredRank >= match.matchCount) {
+    match.handle = nullptr;
   }
   return match;
 }

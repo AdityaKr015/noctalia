@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <span>
 #include <string>
 #include <unordered_map>
@@ -74,10 +75,14 @@ private:
 };
 
 // Unique ext toplevel with an exact title match, skipping wlr-only entries. handle is
-// nullptr on zero or multiple matches; matchCount says which.
+// nullptr when nothing matches, or when several match without a usable preferredRank;
+// matchCount says which.
 struct ExtToplevelTitleMatch {
   ext_foreign_toplevel_handle_v1* handle = nullptr;
   std::size_t matchCount = 0;
 };
-[[nodiscard]] ExtToplevelTitleMatch
-uniqueExtHandleForTitle(std::span<const ToplevelInfo> windows, std::string_view title);
+
+inline constexpr std::size_t kNoPreferredRank = std::numeric_limits<std::size_t>::max();
+[[nodiscard]] ExtToplevelTitleMatch uniqueExtHandleForTitle(
+    std::span<const ToplevelInfo> windows, std::string_view title, std::size_t preferredRank = kNoPreferredRank
+);

@@ -54,6 +54,24 @@ namespace {
         && expect(empty.handle == nullptr && empty.matchCount == 2, "empty title should not resolve among many");
   }
 
+  bool preferredRankResolveAmbiguity() {
+    const std::vector<ToplevelInfo> windows{
+        window(handleA, "Editor"),
+        window(handleB, "Editor"),
+    };
+    const std::vector<ToplevelInfo> solo{window(handleA, "Terminal")};
+    const auto first = uniqueExtHandleForTitle(windows, "Editor", 0);
+    const auto second = uniqueExtHandleForTitle(windows, "Editor", 1);
+    const auto skew = uniqueExtHandleForTitle(windows, "Editor", 2);
+    const auto soloMatch = uniqueExtHandleForTitle(solo, "Terminal", 7);
+    const auto emptyTitled = uniqueExtHandleForTitle(windows, "", 1);
+    return expect(first.handle == handleA && first.matchCount == 2, "rank 0 should pick the first sibling")
+        && expect(second.handle == handleB && second.matchCount == 2, "rank 1 should pick the second sibling")
+        && expect(skew.handle == nullptr && skew.matchCount == 2, "out-of-range rank should keep the ambiguity error")
+        && expect(soloMatch.handle == handleA && soloMatch.matchCount == 1, "unique match should ignore the rank")
+        && expect(emptyTitled.handle == handleB && emptyTitled.matchCount == 2, "empty title should honor the rank");
+  }
+
   bool ignoresEntriesWithoutExtHandle() {
     const std::vector<ToplevelInfo> windows{
         window(nullptr, "Editor"),
@@ -76,6 +94,7 @@ int main() {
   bool ok = true;
   ok = selectsUniqueTitleMatch() && ok;
   ok = rejectsAmbiguity() && ok;
+  ok = preferredRankResolveAmbiguity() && ok;
   ok = ignoresEntriesWithoutExtHandle() && ok;
   ok = emptySelection() && ok;
   return ok ? 0 : 1;
