@@ -1517,8 +1517,8 @@ void WaylandConnection::bindGlobal(
 
   if (interfaceName == ext_foreign_toplevel_list_v1_interface.name) {
     const auto compositor = compositors::detect();
-    // Niri needs the ext identifier for an exact join with its numeric IPC window id. Keep the
-    // wlr manager bound as well because other shell features still consume its richer state.
+    // ext handles carry the exact identifier joined with Niri/Umbriel IPC window ids and are the source for toplevel
+    // image capture. Keep the wlr manager bound as well because other shell features still consume its richer state.
     if (!wayland_protocol_policy::shouldBindExtForeignToplevelList(compositor)) {
       return;
     }
