@@ -846,8 +846,9 @@ std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::r
     return std::unexpected("no focused window reported by the compositor");
   }
   const std::string appIdLower = StringUtils::toLower(focused->appId);
-  const auto windows =
+  const auto appBucketed =
       appIdLower.empty() ? m_wayland.extWindowsWithoutAppId() : m_wayland.extWindowsForApp(appIdLower, appIdLower);
+  const auto appIdLess = appIdLower.empty() ? std::vector<ToplevelInfo>{} : m_wayland.extWindowsWithoutAppId();
   const auto siblings = appIdLower.empty() ? m_wayland.windowsWithoutAppId(nullptr)
                                            : m_wayland.windowsForApp(appIdLower, appIdLower, nullptr);
   std::size_t preferredRank = kNoPreferredRank;
@@ -861,7 +862,7 @@ std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::r
     }
     ++wlrSameTitleCount;
   }
-  const auto match = uniqueExtHandleForTitle(windows, focused->title, preferredRank);
+  const auto match = focusedExtHandleForTitle(appBucketed, appIdLess, focused->title, preferredRank);
   if (match.matchCount == 0) {
     return std::unexpected("no window matches the focused window: " + focused->title);
   }

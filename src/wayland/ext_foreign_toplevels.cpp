@@ -229,6 +229,17 @@ ExtToplevelTitleMatch uniqueExtHandleForTitle(
   return match;
 }
 
+ExtToplevelTitleMatch focusedExtHandleForTitle(
+    std::span<const ToplevelInfo> appBucketed, std::span<const ToplevelInfo> appIdLess, std::string_view title,
+    std::size_t preferredRank
+) {
+  const auto appMatch = uniqueExtHandleForTitle(appBucketed, title, preferredRank);
+  if (appMatch.matchCount != 0) {
+    return appMatch;
+  }
+  return uniqueExtHandleForTitle(appIdLess, title, preferredRank);
+}
+
 void WaylandExtForeignToplevels::onToplevelCreated(ext_foreign_toplevel_handle_v1* handle) {
   if (handle == nullptr) {
     return;

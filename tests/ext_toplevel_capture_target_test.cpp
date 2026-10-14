@@ -81,6 +81,31 @@ namespace {
     return expect(match.handle == handleA && match.matchCount == 1, "wlr-only entries should be ignored");
   }
 
+  bool orphanFallbackResolveWhenAppBucketMisses() {
+    const std::vector<ToplevelInfo> appBucketed{};
+    const std::vector<ToplevelInfo> orphans{window(handleA, "Steam")};
+    const auto match = focusedExtHandleForTitle(appBucketed, orphans, "Steam", 0);
+    return expect(
+        match.handle == handleA && match.matchCount == 1, "app-id-less bucket should resolve an app bucket miss"
+    );
+  }
+
+  bool orphanFallbackPreserveAmbiguity() {
+    const std::vector<ToplevelInfo> appBucketed{};
+    const std::vector<ToplevelInfo> orphans{window(handleA, "Steam"), window(handleB, "Steam")};
+    const auto noRank = focusedExtHandleForTitle(appBucketed, orphans, "Steam", kNoPreferredRank);
+    const auto inRange = focusedExtHandleForTitle(appBucketed, orphans, "Steam", 1);
+    return expect(noRank.handle == nullptr && noRank.matchCount == 2, "ambiguous orphans without a rank should refuse")
+        && expect(inRange.handle == handleB && inRange.matchCount == 2, "rank should still select among ambiguous");
+  }
+
+  bool appBucketWinsOverOrphans() {
+    const std::vector<ToplevelInfo> appBucketed{window(handleA, "Steam")};
+    const std::vector<ToplevelInfo> orphans{window(handleB, "Steam")};
+    const auto match = focusedExtHandleForTitle(appBucketed, orphans, "Steam", 0);
+    return expect(match.handle == handleA && match.matchCount == 1, "app bucket should win over the orphan fallback");
+  }
+
   bool emptySelection() {
     const std::vector<ToplevelInfo> windows{window(handleA, "Editor")};
     const auto only = uniqueExtHandleForTitle(windows, "");
@@ -97,5 +122,8 @@ int main() {
   ok = preferredRankResolveAmbiguity() && ok;
   ok = ignoresEntriesWithoutExtHandle() && ok;
   ok = emptySelection() && ok;
+  ok = orphanFallbackResolveWhenAppBucketMisses() && ok;
+  ok = orphanFallbackPreserveAmbiguity() && ok;
+  ok = appBucketWinsOverOrphans() && ok;
   return ok ? 0 : 1;
 }
