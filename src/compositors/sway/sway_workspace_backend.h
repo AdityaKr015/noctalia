@@ -89,10 +89,9 @@ private:
   std::unordered_map<std::string, std::size_t> m_workspaceOccupancy;
   std::unordered_map<std::string, std::vector<std::string>> m_workspaceApps;
   std::vector<WorkspaceWindow> m_workspaceWindows;
-  // ext-foreign-toplevel identifier sway publishes per view since 1.11, kept for the focused one
+  // sway publishes ext-foreign-toplevel identifier per view, kept for the focused one
   // only. Empty until a snapshot names it. m_publishesExtToplevelIdentity records that the field
-  // was seen; window capture needs sway >= 1.12 regardless, because the ext capture-source
-  // manager global lands there.
+  // was seen.
   std::string m_focusedExtToplevelIdentifier;
   bool m_publishesExtToplevelIdentity = false;
   ChangeCallback m_changeCallback;
