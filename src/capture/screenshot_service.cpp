@@ -829,15 +829,18 @@ void ScreenshotService::registerIpc(IpcService& ipc, const ConfigService& config
 }
 
 std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::resolveFocusedCaptureTarget() const {
-  const auto focusedId = m_platform.focusedCompositorWindowId();
+  auto focusedId = m_platform.focusedCompositorWindowId();
+  if (!focusedId.has_value() || focusedId->empty()) {
+    focusedId = m_platform.focusedExtToplevelIdentifier();
+  }
   if (focusedId.has_value() && !focusedId->empty()) {
     if (auto* handle = m_platform.extHandleForCompositorWindowId(*focusedId); handle != nullptr) {
       return handle;
     }
-    if (m_platform.hasExactWindowIdentity()) {
+    if (m_platform.hasExactExtToplevelIdentity()) {
       return std::unexpected("focused window identity is not available yet: " + *focusedId);
     }
-  } else if (m_platform.hasExactWindowIdentity()) {
+  } else if (m_platform.hasExactExtToplevelIdentity()) {
     return std::unexpected("no focused window identity reported by the compositor");
   }
 
@@ -848,7 +851,6 @@ std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::r
   const std::string appIdLower = StringUtils::toLower(focused->appId);
   const auto appBucketed =
       appIdLower.empty() ? m_wayland.extWindowsWithoutAppId() : m_wayland.extWindowsForApp(appIdLower, appIdLower);
-  const auto appIdLess = appIdLower.empty() ? std::vector<ToplevelInfo>{} : m_wayland.extWindowsWithoutAppId();
   const auto siblings = appIdLower.empty() ? m_wayland.windowsWithoutAppId(nullptr)
                                            : m_wayland.windowsForApp(appIdLower, appIdLower, nullptr);
   std::size_t preferredRank = kNoPreferredRank;
@@ -862,7 +864,7 @@ std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::r
     }
     ++wlrSameTitleCount;
   }
-  const auto match = focusedExtHandleForTitle(appBucketed, appIdLess, focused->title, preferredRank);
+  const auto match = uniqueExtHandleForTitle(appBucketed, focused->title, preferredRank);
   if (match.matchCount == 0) {
     return std::unexpected("no window matches the focused window: " + focused->title);
   }

@@ -1264,6 +1264,7 @@ if build_tests
     'state_store',
     'string_utils',
     'surface_blur_region',
+    'sway_workspace_backend',
     'system_monitor_service',
     'taskbar_widget',
     'template_apply_notify',

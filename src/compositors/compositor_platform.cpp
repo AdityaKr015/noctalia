@@ -1100,13 +1100,7 @@ bool CompositorPlatform::isCompositorWindowIdKnown(const std::string_view window
   }
 
   if (const auto* extHandle = m_hyprlandToplevelMapping->extHandleForWindowId(normalized)) {
-    bool live = false;
-    m_wayland.visitExtToplevelHandles([&](ext_foreign_toplevel_handle_v1* handle) {
-      if (handle == extHandle) {
-        live = true;
-      }
-    });
-    if (live) {
+    if (extToplevelIsLive(extHandle)) {
       return true;
     }
   }
@@ -1137,19 +1131,35 @@ CompositorPlatform::extHandleForCompositorWindowId(const std::string_view window
       return nullptr;
     }
     extHandle = m_hyprlandToplevelMapping->extHandleForWindowId(normalized);
-  } else if (hasExactWindowIdentity()) {
+  } else if (hasExactExtToplevelIdentity()) {
     extHandle = m_wayland.extHandleForIdentifier(windowId);
   }
   if (extHandle == nullptr) {
     return nullptr;
   }
+  return extToplevelIsLive(extHandle) ? extHandle : nullptr;
+}
+
+bool CompositorPlatform::extToplevelIsLive(const ext_foreign_toplevel_handle_v1* handle) const {
   bool live = false;
-  m_wayland.visitExtToplevelHandles([&](ext_foreign_toplevel_handle_v1* handle) {
-    if (handle == extHandle) {
+  m_wayland.visitExtToplevelHandles([&](ext_foreign_toplevel_handle_v1* candidate) {
+    if (candidate == handle) {
       live = true;
     }
   });
-  return live ? extHandle : nullptr;
+  return live;
+}
+
+std::optional<std::string> CompositorPlatform::focusedExtToplevelIdentifier() const {
+  const auto id = m_workspaces != nullptr ? m_workspaces->focusedExtToplevelIdentifier() : std::nullopt;
+  return id && !id->empty() ? id : std::nullopt;
+}
+
+bool CompositorPlatform::hasExactExtToplevelIdentity() const noexcept {
+  return hasExactWindowIdentity()
+      || (m_workspaces != nullptr
+          && m_wayland.hasExtForeignToplevelList()
+          && m_workspaces->publishesExtToplevelIdentity());
 }
 
 void CompositorPlatform::setWorkspaceChangeCallback(ChangeCallback callback) {

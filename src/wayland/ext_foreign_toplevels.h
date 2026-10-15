@@ -86,13 +86,3 @@ inline constexpr std::size_t kNoPreferredRank = std::numeric_limits<std::size_t>
 [[nodiscard]] ExtToplevelTitleMatch uniqueExtHandleForTitle(
     std::span<const ToplevelInfo> windows, std::string_view title, std::size_t preferredRank = kNoPreferredRank
 );
-
-// Focused-window join that tolerates compositors reporting no app_id on ext handles.
-// Sway sends the X11 class as the wlr app_id but omits app_id on its ext handle for
-// XWayland windows, so those toplevels land in the app-id-less bucket alone. The app
-// bucket stays authoritative: the fallback runs only when it holds no title match, so the
-// preferredRank basis is unchanged for compositors that populate both buckets.
-[[nodiscard]] ExtToplevelTitleMatch focusedExtHandleForTitle(
-    std::span<const ToplevelInfo> appBucketed, std::span<const ToplevelInfo> appIdLess, std::string_view title,
-    std::size_t preferredRank = kNoPreferredRank
-);
