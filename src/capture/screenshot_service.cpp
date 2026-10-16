@@ -853,18 +853,14 @@ std::expected<ext_foreign_toplevel_handle_v1*, std::string> ScreenshotService::r
       appIdLower.empty() ? m_wayland.extWindowsWithoutAppId() : m_wayland.extWindowsForApp(appIdLower, appIdLower);
   const auto siblings = appIdLower.empty() ? m_wayland.windowsWithoutAppId(nullptr)
                                            : m_wayland.windowsForApp(appIdLower, appIdLower, nullptr);
-  std::size_t preferredRank = kNoPreferredRank;
   std::size_t wlrSameTitleCount = 0;
   for (const auto& sibling : siblings) {
     if (!focused->title.empty() && sibling.title != focused->title) {
       continue;
     }
-    if (sibling.handle == focused->handle) {
-      preferredRank = wlrSameTitleCount;
-    }
     ++wlrSameTitleCount;
   }
-  const auto match = uniqueExtHandleForTitle(appBucketed, focused->title, preferredRank);
+  const auto match = uniqueExtHandleForTitle(appBucketed, focused->title);
   if (match.matchCount == 0) {
     return std::unexpected("no window matches the focused window: " + focused->title);
   }

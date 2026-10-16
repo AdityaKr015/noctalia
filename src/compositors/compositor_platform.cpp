@@ -1157,6 +1157,9 @@ std::optional<std::string> CompositorPlatform::focusedExtToplevelIdentifier() co
 
 bool CompositorPlatform::hasExactExtToplevelIdentity() const noexcept {
   return hasExactWindowIdentity()
+      || (m_hyprlandToplevelMapping != nullptr
+          && m_hyprlandToplevelMapping->available()
+          && m_wayland.hasExtForeignToplevelList())
       || (m_workspaces != nullptr
           && m_wayland.hasExtForeignToplevelList()
           && m_workspaces->publishesExtToplevelIdentity());
