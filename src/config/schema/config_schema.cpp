@@ -2326,6 +2326,7 @@ namespace noctalia::config::schema {
         field(&DockConfig::crossAxisPadding, "cross_axis_padding", kDockPaddingRange),
         field(&DockConfig::itemSpacing, "item_spacing", kDockItemSpacingRange),
         field(&DockConfig::backgroundOpacity, "background_opacity", kUnitRange),
+        field(&DockConfig::compositorBlur, "compositor_blur"),
         colorField(&DockConfig::border, "border"),
         field(&DockConfig::borderWidth, "border_width", kDockBorderWidthRange),
         custom<DockConfig>(

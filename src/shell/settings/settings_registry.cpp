@@ -1118,6 +1118,11 @@ namespace settings {
           "alpha transparency translucent opacity"
       ));
       entries.push_back(makeEntry(
+          SettingsSection::Dock, "effects", tr("settings.schema.dock.compositor-blur.label"),
+          tr("settings.schema.dock.compositor-blur.description"), path("compositor_blur"),
+          ToggleSetting{dock.compositorBlur}, "blur background effect"
+      ));
+      entries.push_back(makeEntry(
           SettingsSection::Dock, "effects", tr("settings.schema.shared.shadow.label"),
           tr("settings.schema.dock.shadow.description"), path("shadow"), ToggleSetting{dock.shadow}, "shadow"
       ));
