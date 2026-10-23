@@ -2264,6 +2264,7 @@ namespace noctalia::config::schema {
           optionalIntField(&DockMonitorOverride::crossAxisPadding, "cross_axis_padding", kDockPaddingRange),
           optionalIntField(&DockMonitorOverride::itemSpacing, "item_spacing", kDockItemSpacingRange),
           optionalFloatField(&DockMonitorOverride::backgroundOpacity, "background_opacity", kUnitRange),
+          optionalBoolField(&DockMonitorOverride::compositorBlur, "compositor_blur"),
           optionalColorField(&DockMonitorOverride::border, "border"),
           optionalFloatField(&DockMonitorOverride::borderWidth, "border_width", kDockBorderWidthRange),
           optionalIntField(&DockMonitorOverride::radius, "radius", kDockRadiusRange),

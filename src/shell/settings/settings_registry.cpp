@@ -1117,7 +1117,7 @@ namespace settings {
           sliderFor(dock.backgroundOpacity, noctalia::config::schema::kUnitRange, false),
           "alpha transparency translucent opacity"
       ));
-      if (!monitorTable && env.backgroundEffectBlurSupported) {
+      if (env.backgroundEffectBlurSupported) {
         entries.push_back(makeEntry(
             SettingsSection::Dock, "effects", tr("settings.schema.dock.compositor-blur.label"),
             tr("settings.schema.dock.compositor-blur.description"), path("compositor_blur"),
