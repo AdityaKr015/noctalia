@@ -1237,6 +1237,7 @@ if build_tests
     'event_merge',
     'ext_toplevel_capture_target',
     'fcitx_status',
+    'format_units',
     'freedesktop_key_file',
     'firefox_theme_manifest',
     'google_client_calendar_list',
