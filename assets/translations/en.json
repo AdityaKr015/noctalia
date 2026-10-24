@@ -223,6 +223,10 @@
       "apply": "Apply",
       "cancel": "Cancel"
     },
+    "minimize": "Minimise",
+    "minimized": "Minimised",
+    "minimized-count": "{count} minimised",
+    "restore": "Restore",
     "states": {
       "auto": "Auto",
       "custom": "Custom",
