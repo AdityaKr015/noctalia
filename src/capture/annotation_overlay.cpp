@@ -2160,7 +2160,7 @@ namespace capture {
       commitTextEdit();
       return true;
     }
-    if (KeySymbol::isEscape(event.sym) || KeybindMatcher::matches(KeybindAction::Cancel, event.sym, event.modifiers)) {
+    if (KeybindMatcher::matches(KeybindAction::Cancel, event.sym, event.modifiers)) {
       cancelTextEdit();
       return true;
     }
@@ -2274,7 +2274,7 @@ namespace capture {
     const bool ctrl = (event.modifiers & KeyMod::Ctrl) != 0;
     const bool shift = (event.modifiers & KeyMod::Shift) != 0;
 
-    if (KeySymbol::isEscape(event.sym) || KeybindMatcher::matches(KeybindAction::Cancel, event.sym, event.modifiers)) {
+    if (KeybindMatcher::matches(KeybindAction::Cancel, event.sym, event.modifiers)) {
       if (m_gestureActive && m_gestureInstance != nullptr) {
         Instance* inst = m_gestureInstance;
         AnnotationDocument& doc = documentFor(*inst);
@@ -2317,13 +2317,11 @@ namespace capture {
       redo();
       return true;
     }
-    if (KeybindMatcher::matches(KeybindAction::Copy, event.sym, event.modifiers)
-        || (ctrl && (event.sym == XKB_KEY_c || event.sym == XKB_KEY_C))) {
+    if (KeybindMatcher::matches(KeybindAction::Copy, event.sym, event.modifiers)) {
       requestExport(AnnotationExport::Copy);
       return true;
     }
-    if (KeybindMatcher::matches(KeybindAction::Save, event.sym, event.modifiers)
-        || (ctrl && (event.sym == XKB_KEY_s || event.sym == XKB_KEY_S))) {
+    if (KeybindMatcher::matches(KeybindAction::Save, event.sym, event.modifiers)) {
       requestExport(AnnotationExport::Save);
       return true;
     }
