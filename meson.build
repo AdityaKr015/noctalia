@@ -1287,6 +1287,7 @@ if build_tests
     'privacy_capture_classification',
     'plugin_bindings',
     'plugin_catalog',
+    'plugin_file_privacy',
     'plugin_git_export',
     'plugin_i18n',
     'plugin_lifecycle',
