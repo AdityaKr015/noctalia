@@ -1403,6 +1403,11 @@ namespace settings {
         ToggleSetting{cfg.shell.launcher.showAppActions}, "launcher app actions show"
     ));
     entries.push_back(makeEntry(
+        SettingsSection::Launcher, "behavior", tr("settings.schema.panels.launcher-ignore-mouse.label"),
+        tr("settings.schema.panels.launcher-ignore-mouse.description"), {"shell", "launcher", "ignore_mouse"},
+        ToggleSetting{cfg.shell.launcher.ignoreMouse}, "launcher ignore disable mouse input pointer keyboard only"
+    ));
+    entries.push_back(makeEntry(
         SettingsSection::Launcher, "behavior", tr("settings.schema.panels.launcher-currency-exchange.label"),
         tr("settings.schema.panels.launcher-currency-exchange.description"),
         {"shell", "launcher", "fetch_exchange_rates"}, ToggleSetting{cfg.shell.launcher.fetchExchangeRates},
@@ -1599,6 +1604,11 @@ namespace settings {
         SettingsSection::ControlCenter, "home", tr("settings.schema.panels.home-circular-avatar.label"),
         tr("settings.schema.panels.home-circular-avatar.description"), {"control_center", "circular_avatar"},
         ToggleSetting{cfg.controlCenter.circularAvatar}, "avatar profile picture circle radius roundness"
+    ));
+    entries.push_back(makeEntry(
+        SettingsSection::ControlCenter, "home", tr("settings.schema.panels.home-avatar-border.label"),
+        tr("settings.schema.panels.home-avatar-border.description"), {"control_center", "show_avatar_border"},
+        ToggleSetting{cfg.controlCenter.showAvatarBorder}, "avatar border ring accent hide show"
     ));
 
     // Desktop
