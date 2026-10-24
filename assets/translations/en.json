@@ -2741,7 +2741,7 @@
           "label": "Windows in Global Search"
         },
         "launcher-grid": {
-          "description": "Show results and the provider overview as an icon grid instead of rows",
+          "description": "Show grid-capable provider results and the provider overview as an icon grid instead of rows",
           "label": "Grid View"
         },
         "launcher-ignored-panels": {

@@ -125,6 +125,7 @@ private:
   void queueResultsTransition(ResultsTransition transition);
   void animateResultsTransition();
   [[nodiscard]] bool shouldUseAppGrid() const;
+  [[nodiscard]] bool supportsResultGrid() const;
   [[nodiscard]] bool shouldUseLauncherSections() const;
   void rebuildLauncherSections();
   void selectResult(std::size_t index, bool scrollToSelection);
@@ -169,6 +170,7 @@ private:
   std::unique_ptr<LauncherSectionsAdapter> m_launcherSectionsAdapter;
 
   std::string m_query;
+  std::string m_resultProviderId;
   std::string m_scopedProviderId;
   std::string m_scopedPlaceholder;
   ActiveCategoryType m_activeCategoryType = All;
