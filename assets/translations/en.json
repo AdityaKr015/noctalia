@@ -885,6 +885,7 @@
       "battery-low-body": "{device}: {percent}% remaining",
       "battery-low-title": "Battery low",
       "bluetooth": "Bluetooth",
+      "bluetooth-connect-failed-title": "Could not connect to {device}",
       "bluetooth-connected-title": "{device} connected",
       "bluetooth-disconnected-title": "{device} disconnected",
       "calendar": "Calendar",
@@ -2949,7 +2950,7 @@
           "label": "Connect Devices When Bluetooth Turns On"
         },
         "bluetooth-connection-notifications": {
-          "description": "Show a notification when a Bluetooth device connects or disconnects",
+          "description": "Show a notification when a Bluetooth device connects or disconnects on its own, or when a connection you start fails",
           "label": "Device Connection Notifications"
         },
         "calendar": {

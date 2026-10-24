@@ -1614,7 +1614,7 @@ struct BluetoothConfig {
   // Connect paired, trusted devices when Bluetooth turns on, at startup, and after resume.
   bool connectWhenEnabled = false;
   // Show a notification when a Bluetooth device connects or disconnects.
-  bool connectionNotifications = false;
+  bool connectionNotifications = true;
 
   bool operator==(const BluetoothConfig&) const = default;
 };
