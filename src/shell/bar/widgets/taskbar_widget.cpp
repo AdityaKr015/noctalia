@@ -88,14 +88,14 @@ namespace {
   }
 
   [[nodiscard]] float fitBadgeFontSize(
-      Renderer& renderer, std::string_view label, float maxWidth, float maxHeight, float scale, FontWeight fontWeight
+      Renderer& renderer, std::string_view label, float maxWidth, float maxHeight, float scale, const TextFont& font
   ) {
     float fontSize = std::round(Style::fontSizeMini * scale);
     const float minFontSize = std::round(8.0F * scale);
     const float maxTextWidth = maxWidth * 0.82F;
     const float maxTextHeight = maxHeight * 0.82F;
     while (fontSize >= minFontSize) {
-      const auto metrics = renderer.measureText(label, fontSize, {fontWeight});
+      const auto metrics = renderer.measureText(label, fontSize, font);
       const float textWidth = std::max(0.0F, metrics.right - metrics.left);
       const float textHeight = std::max(0.0F, metrics.bottom - metrics.top);
       if (textWidth <= maxTextWidth && textHeight <= maxTextHeight) {
@@ -112,9 +112,9 @@ namespace {
   };
 
   [[nodiscard]] WorkspaceDiscSize measureWorkspaceDiscSize(
-      Renderer& renderer, std::string_view label, float fontSize, float minHeight, float scale, FontWeight fontWeight
+      Renderer& renderer, std::string_view label, float fontSize, float minHeight, float scale, const TextFont& font
   ) {
-    const auto metrics = renderer.measureText(label, fontSize, {fontWeight});
+    const auto metrics = renderer.measureText(label, fontSize, font);
     const float textW = std::max(0.0F, metrics.right - metrics.left);
     const float pad = Style::spaceXs * scale;
     WorkspaceDiscSize size{};
@@ -897,6 +897,7 @@ void TaskbarWidget::buildTaskButtons(Renderer& renderer) {
 
   const FontWeight fontWeight = labelFontWeight();
   const std::string fontFamily = labelFontFamily();
+  const TextFont labelFont{fontWeight, fontFamily};
 
   const float maxTileWidth = m_tasks.empty()
       ? m_taskbarMaxWidth * m_contentScale
@@ -905,7 +906,7 @@ void TaskbarWidget::buildTaskButtons(Renderer& renderer) {
             / static_cast<float>(m_tasks.size())
         );
   // If the title text is too narrow, all it shows is "..." which isn't useful, so we hide it instead.
-  const auto metric = renderer.measureText("...", Style::fontSizeCaption * fontScale(), {fontWeight});
+  const auto metric = renderer.measureText("...", Style::fontSizeCaption * fontScale(), labelFont);
   const float minWindowTitleWidth = (metric.right - metric.left) * 2;
   const float windowTitleGap = Style::spaceXs * m_contentScale;
   const float windowTitleWidth =
@@ -1363,7 +1364,7 @@ void TaskbarWidget::buildTaskButtons(Renderer& renderer) {
       float maxMainStart = 0.0F;
       for (const auto& wsm : m_workspaces) {
         auto measuredDisc =
-            measureWorkspaceDiscSize(renderer, wsm.label, externalBadgeFontSize, badgeBase, m_contentScale, fontWeight);
+            measureWorkspaceDiscSize(renderer, wsm.label, externalBadgeFontSize, badgeBase, m_contentScale, labelFont);
         if (m_vertical) {
           measuredDisc = clampWorkspaceDiscToCrossLimit(measuredDisc, externalBadgeCrossLimit);
         }
@@ -1396,8 +1397,7 @@ void TaskbarWidget::buildTaskButtons(Renderer& renderer) {
       badgePalette.disabled = badgePalette.normal;
       badgePalette.borderWidth = 0.0F;
 
-      const float badgeFontSize =
-          fitBadgeFontSize(renderer, ws.label, disc.width, disc.height, fontScale(), fontWeight);
+      const float badgeFontSize = fitBadgeFontSize(renderer, ws.label, disc.width, disc.height, fontScale(), labelFont);
 
       auto badge = ui::button({
           .text = ws.label,
@@ -1519,7 +1519,7 @@ void TaskbarWidget::buildTaskButtons(Renderer& renderer) {
       std::string overflowText;
       if (overflow > 0) {
         overflowText = "+" + std::to_string(overflow);
-        const TextMetrics tm = renderer.measureText(overflowText, overflowFontSize, {fontWeight});
+        const TextMetrics tm = renderer.measureText(overflowText, overflowFontSize, labelFont);
         overflowLabelWidth = std::max(tm.right - tm.left, tm.inkRight - tm.inkLeft);
         overflowLabelHeight = tm.bottom - tm.top;
       }
@@ -1671,7 +1671,7 @@ void TaskbarWidget::buildTaskButtons(Renderer& renderer) {
       std::optional<WorkspaceDiscSize> externalBadgeDisc;
       if (externalBadge) {
         externalBadgeDisc =
-            measureWorkspaceDiscSize(renderer, ws.label, externalBadgeFontSize, badgeBase, m_contentScale, fontWeight);
+            measureWorkspaceDiscSize(renderer, ws.label, externalBadgeFontSize, badgeBase, m_contentScale, labelFont);
         if (m_vertical) {
           *externalBadgeDisc = clampWorkspaceDiscToCrossLimit(*externalBadgeDisc, externalBadgeCrossLimit);
         }
@@ -1715,7 +1715,7 @@ void TaskbarWidget::buildTaskButtons(Renderer& renderer) {
         const float inlineBadgeFontSize = std::round(Style::fontSizeCaption * 0.85F * fontScale());
         const float inlineBadgeHeight = std::round(std::max(10.0F, iconSize - (Style::spaceXs * m_contentScale)));
         WorkspaceDiscSize disc = measureWorkspaceDiscSize(
-            renderer, ws.label, inlineBadgeFontSize, inlineBadgeHeight, m_contentScale, fontWeight
+            renderer, ws.label, inlineBadgeFontSize, inlineBadgeHeight, m_contentScale, labelFont
         );
         disc.height = inlineBadgeHeight;
         disc.width = std::round(std::max(inlineBadgeHeight, disc.width));
