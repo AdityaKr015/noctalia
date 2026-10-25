@@ -159,6 +159,10 @@ private:
   void restoreEditSnapshot(const EditSnapshot& snapshot);
   [[nodiscard]] std::size_t xToByteOffset(float localX) const;
   [[nodiscard]] float stopXForByte(std::size_t bytePos) const;
+  [[nodiscard]] std::size_t visuallyAdjacentByte(std::size_t bytePos, bool left, bool wordStart) const;
+  [[nodiscard]] bool valueLaidOutRtl() const noexcept;
+  [[nodiscard]] bool labelSlicingEnabled() const noexcept;
+  [[nodiscard]] float restingScrollOffset() const;
   void syncPasswordGlyphNodes(std::size_t count);
   void animatePasswordGlyphIn(GlyphNode& glyph);
 
@@ -214,6 +218,12 @@ private:
   std::vector<float> m_stopX;
   std::vector<std::size_t> m_stopByte;
   std::vector<TextCursorStop> m_stopRect;
+  // Single-line text only: false when bidi reordering puts some cursor stops out of byte order (any
+  // right-to-left run). Multiline and masked text keep it true.
+  bool m_stopsInLogicalOrder = true;
+  // Per-character screen extents (parallel to m_stopByte minus the last stop), measured only for
+  // single-line text whose stops are out of byte order.
+  std::vector<TextCharSpan> m_charSpans;
   float m_stopsBuiltForWidth = -1.0F;
   bool m_textMetricsDirty = true;
   float m_cachedLabelY = 0.0F;
