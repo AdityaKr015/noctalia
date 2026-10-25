@@ -89,6 +89,7 @@
 #include "ui/dialogs/file_dialog_popup.h"
 #include "ui/dialogs/glyph_picker_dialog_popup.h"
 #include "ui/dialogs/layer_popup_host.h"
+#include "ui/dialogs/search_picker_popup.h"
 #include "wayland/clipboard_poll_source.h"
 #include "wayland/clipboard_service.h"
 #include "wayland/key_repeat_poll_source.h"
@@ -392,6 +393,7 @@ private:
   ColorPickerDialogPopup m_colorPickerDialogPopup;
   GlyphPickerDialogPopup m_glyphPickerDialogPopup;
   FileDialogPopup m_fileDialogPopup;
+  SearchPickerPopup m_searchPickerDialogPopup;
 
   // Poll sources (must outlive MainLoop)
   std::unique_ptr<SessionBusPollSource> m_busPollSource;

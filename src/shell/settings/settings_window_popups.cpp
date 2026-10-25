@@ -489,7 +489,7 @@ void SettingsWindow::openSearchPickerPopup(settings::SearchPickerOpenRequest req
   }
 
   if (m_searchPickerPopup == nullptr) {
-    m_searchPickerPopup = std::make_unique<settings::SearchPickerPopup>();
+    m_searchPickerPopup = std::make_unique<SearchPickerPopup>();
     m_searchPickerPopup->initialize(*m_wayland, *m_config, *m_renderContext);
   }
 
@@ -536,7 +536,7 @@ void SettingsWindow::openSearchPickerPopup(settings::SearchPickerOpenRequest req
   XdgPopupParent parent = popupParentFor(*m_surface, output, m_wayland->lastInputSerial());
 
   m_searchPickerPopup->open(
-      settings::SearchPickerPopupRequest{
+      SearchPickerPopupRequest{
           .parent = parent,
           .title = std::move(request.title),
           .options = std::move(pickerOptions),
