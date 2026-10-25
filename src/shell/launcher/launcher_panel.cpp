@@ -2950,8 +2950,9 @@ void LauncherPanel::rebuildLauncherNavigation() {
   const float settingsButtonWidth =
       m_launcherSettingsButton != nullptr ? Style::controlHeightSm + Style::spaceXs : 0.0F;
   const bool iconOnly = m_config != nullptr
-      && static_cast<float>(m_config->config().shell.launcher.width)
-          < static_cast<float>(kCompactNavigationWidth) + settingsButtonWidth;
+      && (!m_config->config().shell.launcher.showNavigationLabels
+          || static_cast<float>(m_config->config().shell.launcher.width)
+              < static_cast<float>(kCompactNavigationWidth) + settingsButtonWidth);
 
   std::size_t navigationIndex = 0;
   for (const CategoryFilterSlot& slot : m_categoryFilterSlots) {

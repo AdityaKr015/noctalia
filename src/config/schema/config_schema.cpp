@@ -1541,6 +1541,7 @@ namespace noctalia::config::schema {
           enumField(&ShellConfig::LauncherConfig::defaultView, "default_view", ShellConfig::kLauncherDefaultViews),
           field(&ShellConfig::LauncherConfig::categories, "categories"),
           field(&ShellConfig::LauncherConfig::categoryIconsOnly, "category_icons_only"),
+          field(&ShellConfig::LauncherConfig::showNavigationLabels, "show_navigation_labels"),
           field(&ShellConfig::LauncherConfig::showSettingsButton, "show_settings_button"),
           field(&ShellConfig::LauncherConfig::showSessionButton, "show_session_button"),
           field(&ShellConfig::LauncherConfig::showIcons, "show_icons"),

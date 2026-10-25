@@ -1358,6 +1358,16 @@ namespace settings {
     }
     {
       auto e = makeEntry(
+          SettingsSection::Launcher, "launcher", tr("settings.schema.panels.launcher-show-navigation-labels.label"),
+          tr("settings.schema.panels.launcher-show-navigation-labels.description"),
+          {"shell", "launcher", "show_navigation_labels"}, ToggleSetting{cfg.shell.launcher.showNavigationLabels},
+          "launcher navigation tabs labels text recent pinned all categories providers icons"
+      );
+      e.visibleWhen = launcherFull;
+      entries.push_back(std::move(e));
+    }
+    {
+      auto e = makeEntry(
           SettingsSection::Launcher, "launcher", tr("settings.schema.panels.launcher-show-settings-button.label"),
           tr("settings.schema.panels.launcher-show-settings-button.description"),
           {"shell", "launcher", "show_settings_button"}, ToggleSetting{cfg.shell.launcher.showSettingsButton},

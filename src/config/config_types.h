@@ -1219,6 +1219,7 @@ struct ShellConfig {
     // Simple layout only: show the category chip row under the search field.
     bool categories = true;
     bool categoryIconsOnly = false;
+    bool showNavigationLabels = true;
     bool showSettingsButton = true;
     bool showSessionButton = true;
     bool showIcons = true;

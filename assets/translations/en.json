@@ -2814,6 +2814,10 @@
           "description": "Show application icons in launcher results",
           "label": "Show App Icons"
         },
+        "launcher-show-navigation-labels": {
+          "description": "Show text beside the Recent, Pinned, All, Categories, and Providers icons when space allows",
+          "label": "Show Navigation Labels"
+        },
         "launcher-show-session-button": {
           "description": "Show a shortcut to the configured session actions",
           "label": "Show Session Button"

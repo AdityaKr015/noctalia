@@ -541,6 +541,7 @@ location = "https://example.invalid/bad"
     c.shell.launcher.defaultView = ShellConfig::LauncherDefaultView::Categories;
     c.shell.launcher.categories = false;
     c.shell.launcher.categoryIconsOnly = true;
+    c.shell.launcher.showNavigationLabels = false;
     c.shell.launcher.showSettingsButton = false;
     c.shell.launcher.showSessionButton = false;
     c.shell.launcher.compact = true;
