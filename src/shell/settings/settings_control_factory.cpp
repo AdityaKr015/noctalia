@@ -83,7 +83,7 @@ namespace settings {
           ui::glyph({
               .glyph = "border-corner-pill",
               .glyphSize = Style::fontSizeBody * scale,
-              .color = colorSpecFromRole(enabled ? ColorRole::OnSurfaceVariant : ColorRole::Outline),
+              .color = colorSpecFromRole(enabled ? ColorRole::OnSurfaceVariant : ColorRole::OutlineVariant),
               .visible = hidden,
           })
       );

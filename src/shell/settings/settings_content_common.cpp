@@ -19,7 +19,7 @@
 namespace settings {
 
   namespace {
-    // Cards sit on the Surface window background and hold controls that fill SurfaceVariant at full
+    // Cards sit on the Surface window background and hold controls that fill SurfaceContainer at full
     // opacity, so a full-strength card fill would match them. Mixing the theme's own elevated tone
     // partway toward Surface keeps the palette hue and still reads distinct from those controls.
     constexpr float kCardFillOpacity = 0.4F;

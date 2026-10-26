@@ -113,8 +113,8 @@ namespace {
     return ButtonVariant::Default;
   }
 
-  // Default/Ghost use SurfaceVariant or clear fills that disappear on the
-  // SurfaceVariant login panel — Outline gives a readable Surface chip.
+  // Default/Ghost use SurfaceContainer or clear fills that disappear on the
+  // SurfaceContainer login panel; Outline gives a readable Surface chip.
   [[nodiscard]] ButtonVariant lockscreenSessionVariant(SessionActionButtonVariant variant) {
     switch (variant) {
     case SessionActionButtonVariant::Default:
@@ -1326,7 +1326,7 @@ void LockSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
   }
 
   m_loginPanel->setFill(loginStyle.panelFill);
-  m_loginPanel->setBorder(colorForRole(ColorRole::Outline, loginStyle.panelOpacity), Style::borderWidth);
+  m_loginPanel->setBorder(colorForRole(ColorRole::OutlineVariant, loginStyle.panelOpacity), Style::borderWidth);
   m_loginPanel->setRadius(Style::scaledRadius(loginStyle.panelRadius));
   m_loginPanel->setSoftness(1.0F);
   m_loginPanel->setClipChildren(true);
@@ -1556,7 +1556,7 @@ void LockSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
 
       m_authPanel->setPadding(authPadV, authPadH);
       m_authPanel->setFill(loginStyle.panelFill);
-      m_authPanel->setBorder(colorForRole(ColorRole::Outline, loginStyle.panelOpacity), Style::borderWidth);
+      m_authPanel->setBorder(colorForRole(ColorRole::OutlineVariant, loginStyle.panelOpacity), Style::borderWidth);
       m_authPanel->setRadius(Style::scaledRadius(loginStyle.panelRadius));
       m_authPanel->setSoftness(1.0F);
       m_authPanel->setMinWidth(authW);

@@ -24,8 +24,8 @@ namespace settings {
     setAlign(FlexAlign::Stretch);
     setGap(Style::spaceXs * scale);
     setPadding(Style::spaceSm * scale);
-    setFill(colorSpecFromRole(ColorRole::SurfaceVariant));
-    setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth);
+    setFill(colorSpecFromRole(ColorRole::SurfaceContainer));
+    setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth);
     setRadius(Style::scaledRadiusMd(scale));
 
     addChild(
@@ -251,7 +251,8 @@ namespace settings {
     m_addedGlyph->setVisible(onDisk);
     m_addedGlyph->setParticipatesInLayout(onDisk);
 
-    const ColorRole borderRole = selected ? ColorRole::Primary : (hovered ? ColorRole::Hover : ColorRole::Outline);
+    const ColorRole borderRole =
+        selected ? ColorRole::Primary : (hovered ? ColorRole::Hover : ColorRole::OutlineVariant);
     setBorder(colorSpecFromRole(borderRole), selected ? Style::borderWidth * 2.0F : Style::borderWidth);
   }
 

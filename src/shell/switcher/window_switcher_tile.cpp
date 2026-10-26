@@ -56,7 +56,7 @@ WindowSwitcherTile::WindowSwitcherTile(float contentScale, AsyncTextureCache* as
   m_frame->addChild(
       ui::box({
           .out = &m_previewHost,
-          .fill = colorSpecFromRole(ColorRole::SurfaceVariant),
+          .fill = colorSpecFromRole(ColorRole::SurfaceContainer),
           .radius = previewRadius,
           .participatesInLayout = false,
           .configure = [](Box& box) { box.setClipChildren(true); },
@@ -137,7 +137,7 @@ WindowSwitcherTile::WindowSwitcherTile(float contentScale, AsyncTextureCache* as
   auto captionBadge = ui::box({
       .out = &m_captionBadge,
       .fill = colorSpecFromRole(ColorRole::Surface),
-      .border = scaleAlpha(colorSpecFromRole(ColorRole::Outline), Style::disabledOutlineAlpha),
+      .border = scaleAlpha(colorSpecFromRole(ColorRole::OutlineVariant), Style::disabledOutlineAlpha),
       .borderWidth = Style::borderWidth,
       .radius = cardRadius,
       .visible = false,
@@ -300,17 +300,17 @@ void WindowSwitcherTile::applyVisualState() {
   if (m_selected) {
     m_frame->setFill(colorSpecFromRole(ColorRole::Surface));
     m_frame->setBorder(colorSpecFromRole(ColorRole::Primary), Style::emphasizedBorderWidth);
-    m_previewHost->setFill(colorSpecFromRole(ColorRole::SurfaceVariant));
+    m_previewHost->setFill(colorSpecFromRole(ColorRole::SurfaceContainer));
   } else if (m_pointerHovered) {
     m_frame->setFill(colorSpecFromRole(ColorRole::Surface));
     m_frame->setBorder(colorSpecFromRole(ColorRole::Hover), Style::emphasizedBorderWidth);
-    m_previewHost->setFill(colorSpecFromRole(ColorRole::SurfaceVariant));
+    m_previewHost->setFill(colorSpecFromRole(ColorRole::SurfaceContainer));
   } else {
     m_frame->setFill(colorSpecFromRole(ColorRole::Surface));
     m_frame->setBorder(
-        scaleAlpha(colorSpecFromRole(ColorRole::Outline), Style::disabledOutlineAlpha), Style::borderWidth
+        scaleAlpha(colorSpecFromRole(ColorRole::OutlineVariant), Style::disabledOutlineAlpha), Style::borderWidth
     );
-    m_previewHost->setFill(colorSpecFromRole(ColorRole::SurfaceVariant));
+    m_previewHost->setFill(colorSpecFromRole(ColorRole::SurfaceContainer));
   }
   if (m_toneOverlay != nullptr) {
     const float tone = m_depth == WindowSwitcherTileDepth::Far

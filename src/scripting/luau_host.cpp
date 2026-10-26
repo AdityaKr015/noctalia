@@ -749,7 +749,7 @@ namespace {
   int luau_getColor(lua_State* L) {
     size_t len = 0;
     const char* role = luaL_checklstring(L, 1, &len);
-    const auto colorRole = colorRoleFromToken(std::string_view(role, len));
+    const auto colorRole = colorRoleFromPluginToken(std::string_view(role, len));
     if (!colorRole.has_value()) {
       lua_pushnil(L);
       return 1;

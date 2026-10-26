@@ -196,7 +196,7 @@ namespace ui {
           return std::nullopt;
         }
       }
-      if (auto role = colorRoleFromToken(base); role.has_value()) {
+      if (auto role = colorRoleFromPluginToken(base); role.has_value()) {
         return colorSpecFromRole(*role, alpha);
       }
       if (base.size() != token->size()) {

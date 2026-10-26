@@ -146,7 +146,7 @@ namespace {
     if (hovered) {
       card.setBorder(colorSpecFromRole(ColorRole::Hover), Style::borderWidth);
     } else if (Style::cardBordersEnabled()) {
-      card.setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth);
+      card.setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth);
     } else {
       card.clearBorder();
     }
@@ -1094,7 +1094,7 @@ void HomeTab::syncUserCardFill() {
     m_userCard->clearFill();
     return;
   }
-  m_userCard->setFill(colorSpecFromRole(ColorRole::SurfaceVariant, panelCardOpacity()));
+  m_userCard->setFill(colorSpecFromRole(ColorRole::SurfaceContainer, panelCardOpacity()));
 }
 
 void HomeTab::syncWallpaperLayerVisibility() {

@@ -1646,7 +1646,7 @@ void SettingsWindow::openCalendarAccountEditor(std::optional<std::string> accoun
           .align = FlexAlign::Stretch,
           .gap = Style::spaceXs * scale,
           .padding = Style::spaceSm * scale,
-          .fill = colorSpecFromRole(ColorRole::SurfaceVariant, 0.35F),
+          .fill = colorSpecFromRole(ColorRole::SurfaceContainer, 0.35F),
           .radius = Style::scaledRadiusMd(scale),
       });
       for (const CalendarSource& source : draft->discoveredCalendars) {

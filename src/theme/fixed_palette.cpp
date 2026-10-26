@@ -213,7 +213,7 @@ namespace noctalia::theme {
     }
   }
 
-  TokenMap expandFixedPaletteMode(const ::Palette& palette, bool isDark) {
+  TokenMap expandFixedPaletteMode(const FixedPalette& palette, bool isDark) {
     const Color primary = toUiColor(palette.primary);
     const Color onPrimary = toUiColor(palette.onPrimary);
     const Color secondary = toUiColor(palette.secondary);
@@ -312,7 +312,7 @@ namespace noctalia::theme {
         ? Color::fromHsl(surfaceVariantH, surfaceVariantS, std::min(surfaceVariantL + 0.12, 0.50))
         : Color::fromHsl(surfaceH, surfaceS, std::min(surfaceL + 0.03, 0.98));
 
-    // The outline role reads outline_variant, so it must be mOutline as given.
+    // The outline_variant role is mOutline as given; outline is its contrast-adjusted form.
     const Color outline = ensureContrast(outlineRaw, surface, 3.0);
     const Color outlineVariant = outlineRaw;
     const Color scrim(0, 0, 0);
@@ -379,15 +379,15 @@ namespace noctalia::theme {
     return result;
   }
 
-  GeneratedPalette expandFixedPalettes(const ::Palette& dark, const ::Palette& light) {
+  GeneratedPalette expandFixedPalettes(const FixedPalette& dark, const FixedPalette& light) {
     return GeneratedPalette{
         .dark = expandFixedPaletteMode(dark, true),
         .light = expandFixedPaletteMode(light, false),
     };
   }
 
-  ::Palette mapGeneratedPaletteMode(const TokenMap& t) {
-    return ::Palette{
+  FixedPalette fixedPaletteFromTokens(const TokenMap& t) {
+    return FixedPalette{
         .primary = tokenToColor(t, "primary"),
         .onPrimary = tokenToColor(t, "on_primary"),
         .secondary = tokenToColor(t, "secondary"),
@@ -402,6 +402,39 @@ namespace noctalia::theme {
         .onSurfaceVariant = tokenToColor(t, "on_surface_variant"),
         .outline = tokenToColor(t, "outline_variant"),
         .shadow = tokenToColor(t, "shadow"),
+        .hover = tokenToColor(t, "hover"),
+        .onHover = tokenToColor(t, "on_hover"),
+    };
+  }
+
+  ::Palette mapGeneratedPaletteMode(const TokenMap& t) {
+    return ::Palette{
+        .primary = tokenToColor(t, "primary"),
+        .onPrimary = tokenToColor(t, "on_primary"),
+        .primaryContainer = tokenToColor(t, "primary_container"),
+        .onPrimaryContainer = tokenToColor(t, "on_primary_container"),
+        .secondary = tokenToColor(t, "secondary"),
+        .onSecondary = tokenToColor(t, "on_secondary"),
+        .secondaryContainer = tokenToColor(t, "secondary_container"),
+        .onSecondaryContainer = tokenToColor(t, "on_secondary_container"),
+        .tertiary = tokenToColor(t, "tertiary"),
+        .onTertiary = tokenToColor(t, "on_tertiary"),
+        .tertiaryContainer = tokenToColor(t, "tertiary_container"),
+        .onTertiaryContainer = tokenToColor(t, "on_tertiary_container"),
+        .error = tokenToColor(t, "error"),
+        .onError = tokenToColor(t, "on_error"),
+        .errorContainer = tokenToColor(t, "error_container"),
+        .onErrorContainer = tokenToColor(t, "on_error_container"),
+        .surface = tokenToColor(t, "surface"),
+        .onSurface = tokenToColor(t, "on_surface"),
+        .onSurfaceVariant = tokenToColor(t, "on_surface_variant"),
+        .surfaceContainerLow = tokenToColor(t, "surface_container_low"),
+        .surfaceContainer = tokenToColor(t, "surface_container"),
+        .surfaceContainerHigh = tokenToColor(t, "surface_container_high"),
+        .surfaceContainerHighest = tokenToColor(t, "surface_container_highest"),
+        .outlineVariant = tokenToColor(t, "outline_variant"),
+        .shadow = tokenToColor(t, "shadow"),
+        .scrim = tokenToColor(t, "scrim"),
         .hover = tokenToColor(t, "hover"),
         .onHover = tokenToColor(t, "on_hover"),
     };

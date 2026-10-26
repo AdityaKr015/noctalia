@@ -31,7 +31,7 @@ struct BarCapsuleGroupStyle {
   std::string id;
   std::vector<std::string> members; // ordered member widget references
   bool enabled = true;
-  ColorSpec fill = colorSpecFromRole(ColorRole::SurfaceVariant);
+  ColorSpec fill = colorSpecFromRole(ColorRole::SurfaceContainer);
   // True when `border` is explicitly present (empty value = no outline); mirrors bar/widget border semantics.
   bool borderSpecified = false;
   std::optional<ColorSpec> border;
@@ -157,7 +157,7 @@ struct BarConfig {
   float backgroundOpacity = 1.0F;
   bool compositorBlur = true;
   // Inside outline for the bar background; attached panels inherit the resolved values.
-  ColorSpec border = colorSpecFromRole(ColorRole::Outline);
+  ColorSpec border = colorSpecFromRole(ColorRole::OutlineVariant);
   float borderWidth = 0.0F;
   std::int32_t radius = static_cast<std::int32_t>(Style::radiusXl);
   std::int32_t radiusTopLeft = static_cast<std::int32_t>(Style::radiusXl);
@@ -189,7 +189,7 @@ struct BarConfig {
                                          "battery", "control-center", "session"};
   // When true, widgets on this bar use a capsule unless `[widget.*] capsule = false`.
   bool widgetCapsuleDefault = false;
-  ColorSpec widgetCapsuleFill = colorSpecFromRole(ColorRole::SurfaceVariant);
+  ColorSpec widgetCapsuleFill = colorSpecFromRole(ColorRole::SurfaceContainer);
   // When set, bar widgets with capsules use this for icon + primary label color unless overridden per widget.
   std::optional<ColorSpec> widgetCapsuleForeground;
   // Default primary label color for all widgets on this bar (same as per-widget `color`); per-widget `color`
@@ -387,7 +387,7 @@ using ConfigOverrideValue = std::variant<
 // Corner shape and edge softness are fixed in the shell code; padding, radius, and border width are configurable.
 struct WidgetBarCapsuleSpec {
   bool enabled = false;
-  ColorSpec fill = colorSpecFromRole(ColorRole::SurfaceVariant);
+  ColorSpec fill = colorSpecFromRole(ColorRole::SurfaceContainer);
   // Opaque group ID (auto-generated). Adjacent widgets in the same section with the same non-empty ID share one
   // shell and inherit the group's `BarCapsuleGroupStyle`.
   std::string group;
@@ -733,7 +733,7 @@ struct DockConfig {
   std::int32_t itemSpacing = 6;      // gap between items
   float backgroundOpacity = 0.88F;
   // Inside outline for the dock background.
-  ColorSpec border = colorSpecFromRole(ColorRole::Outline);
+  ColorSpec border = colorSpecFromRole(ColorRole::OutlineVariant);
   float borderWidth = 0.0F;
   std::int32_t radius = 16;            // dock background corner radius
   std::int32_t radiusTopLeft = 16;     // dock background top-left corner radius
@@ -848,7 +848,7 @@ struct OsdConfig {
   float scale = 1.0F;
   float backgroundOpacity = 0.97F;
   bool border = true; // outline around OSD popup cards
-  ColorSpec borderColor = colorSpecFromRole(ColorRole::Outline);
+  ColorSpec borderColor = colorSpecFromRole(ColorRole::OutlineVariant);
   float borderWidth = Style::borderWidth;
   bool followFocusedOutput = false;
   int offsetX = 20;
@@ -871,7 +871,7 @@ struct NotificationConfig {
   std::int32_t width = kDefaultWidth;
   float backgroundOpacity = 0.97F; // toast card background alpha (0.0–1.0)
   bool border = true;              // outline around toast cards
-  ColorSpec borderColor = colorSpecFromRole(ColorRole::Outline);
+  ColorSpec borderColor = colorSpecFromRole(ColorRole::OutlineVariant);
   float borderWidth = Style::borderWidth;
   bool followFocusedOutput = false;
   int offsetX = 20; // absolute horizontal margin from the screen edge
@@ -1139,7 +1139,7 @@ struct ShellConfig {
   struct PanelConfig {
     PanelTransparencyMode transparencyMode = PanelTransparencyMode::Solid;
     bool borders = true; // outline on floating panel surfaces
-    ColorSpec borderColor = colorSpecFromRole(ColorRole::Outline);
+    ColorSpec borderColor = colorSpecFromRole(ColorRole::OutlineVariant);
     float borderWidth = Style::borderWidth;
     bool shadow = true;                    // cast the global [shell.shadow] from panel surfaces
     bool listItemBackground = false;       // filled rounded background behind launcher/clipboard list items

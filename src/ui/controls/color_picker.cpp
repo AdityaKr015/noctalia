@@ -101,7 +101,9 @@ ColorPicker::ColorPicker() {
       ui::image({
           .out = &m_svImage,
           .fit = ImageFit::Stretch,
-          .configure = [](Image& image) { image.setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth); },
+          .configure = [](Image& image) {
+            image.setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth);
+          },
       })
   );
   addChild(ui::image({.out = &m_hueImage, .fit = ImageFit::Stretch}));
@@ -277,9 +279,9 @@ void ColorPicker::applyStyle() {
   m_alphaThumb->setSize(hueThumb, hueThumb);
   m_alphaThumb->setRadius(hueThumb * 0.5F);
   for (Box* swatch : m_swatchBoxes) {
-    swatch->setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth * m_scale);
+    swatch->setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth * m_scale);
   }
-  m_svImage->setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth * m_scale);
+  m_svImage->setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth * m_scale);
   updateHueThumbStyle();
 }
 
@@ -401,7 +403,7 @@ void ColorPicker::rebuildSwatches() {
             .out = &box,
             .fill = fixedColorSpec(m_swatches[i]),
             .configure = [this](Box& swatch) {
-              swatch.setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth * m_scale);
+              swatch.setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth * m_scale);
             },
         })
     );

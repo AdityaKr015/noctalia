@@ -1864,7 +1864,7 @@ void WindowSwitcher::buildScene(Instance& instance, std::uint32_t width, std::ui
       ui::box({
           .out = &instance.panelBackground,
           .fill = colorSpecFromRole(ColorRole::Surface),
-          .border = scaleAlpha(colorSpecFromRole(ColorRole::Outline), Style::disabledOutlineAlpha),
+          .border = scaleAlpha(colorSpecFromRole(ColorRole::OutlineVariant), Style::disabledOutlineAlpha),
           .borderWidth = Style::borderWidth,
           .radius = Style::scaledRadiusXl(scale),
           .visible = layout.boxed,
@@ -1923,7 +1923,7 @@ void WindowSwitcher::buildScene(Instance& instance, std::uint32_t width, std::ui
     auto countBackground = ui::box({
         .out = &instance.countBackground,
         .fill = colorSpecFromRole(ColorRole::Surface),
-        .border = scaleAlpha(colorSpecFromRole(ColorRole::Outline), Style::disabledOutlineAlpha),
+        .border = scaleAlpha(colorSpecFromRole(ColorRole::OutlineVariant), Style::disabledOutlineAlpha),
         .borderWidth = Style::borderWidth,
         .radius = Style::scaledRadiusMd(scale),
         .width = layout.countWidth,

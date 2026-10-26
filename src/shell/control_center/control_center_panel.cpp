@@ -126,7 +126,7 @@ void ControlCenterPanel::create() {
         .fillWidth = false,
         .fillHeight = true,
         .configure = [this, scale](Flex& column) {
-          column.setFill(colorSpecFromRole(ColorRole::SurfaceVariant, panelCardOpacity()));
+          column.setFill(colorSpecFromRole(ColorRole::SurfaceContainer, panelCardOpacity()));
           column.setRadius(Style::scaledRadiusXl(scale));
         },
     });
@@ -324,7 +324,7 @@ void ControlCenterPanel::onPanelCardOpacityChanged(float opacity) {
     }
   }
   if (m_sidebar != nullptr) {
-    m_sidebar->setFill(colorSpecFromRole(ColorRole::SurfaceVariant, opacity));
+    m_sidebar->setFill(colorSpecFromRole(ColorRole::SurfaceContainer, opacity));
   }
 }
 

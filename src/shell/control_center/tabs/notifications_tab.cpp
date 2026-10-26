@@ -330,7 +330,7 @@ namespace {
 
       m_iconSlot = static_cast<Box*>(m_leftCluster->addChild(
           ui::box({
-              .fill = colorSpecFromRole(ColorRole::SurfaceVariant),
+              .fill = colorSpecFromRole(ColorRole::SurfaceContainer),
               .radius = notificationIconRadius(kHistoryIconSize, scale),
               .width = kHistoryIconSize * scale,
               .height = kHistoryIconSize * scale,

@@ -286,8 +286,8 @@ namespace settings {
             .configure =
                 [this](Flex& row) {
                   row.setRadius(Style::scaledRadiusMd(m_scale));
-                  row.setFill(colorSpecFromRole(ColorRole::SurfaceVariant, 0.45F));
-                  row.setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth);
+                  row.setFill(colorSpecFromRole(ColorRole::SurfaceContainer, 0.45F));
+                  row.setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth);
                 },
         },
         ui::radioButton({

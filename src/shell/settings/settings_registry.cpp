@@ -223,7 +223,7 @@ namespace settings {
       return select;
     }
 
-    ColorSwatchPreview palettePreviewFromPalette(const ::Palette& palette) {
+    ColorSwatchPreview palettePreviewFromPalette(const noctalia::theme::FixedPalette& palette) {
       return ColorSwatchPreview{
           .surface = fixedColorSpec(palette.surface),
           .swatches = {

@@ -876,7 +876,7 @@ namespace settings {
       if (on) {
         card->setBorder(colorSpecFromRole(ColorRole::Primary), Style::borderWidth * 2.0F);
       } else {
-        card->setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth);
+        card->setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth);
       }
     }
 
@@ -3115,9 +3115,9 @@ namespace settings {
           .align = FlexAlign::Stretch,
           .gap = Style::spaceXs * ctx.scale,
           .padding = Style::spaceSm * ctx.scale,
-          .fill = colorSpecFromRole(ColorRole::SurfaceVariant, 0.45F),
+          .fill = colorSpecFromRole(ColorRole::SurfaceContainer, 0.45F),
           .radius = Style::scaledRadiusMd(ctx.scale),
-          .border = colorSpecFromRole(ColorRole::Outline),
+          .border = colorSpecFromRole(ColorRole::OutlineVariant),
           .minWidth = 160.0F * ctx.scale,
           .flexGrow = 1.0F,
       });
@@ -3269,10 +3269,10 @@ namespace settings {
           }
 
           // Tint the container by the group's own fill so groups with different colors are distinguishable.
-          // A color meant to blend into surfaces (e.g. surface_variant) can't separate the box from the lane,
+          // A color meant to blend into surfaces (e.g. surface_container) can't separate the box from the lane,
           // so fall back to a neutral border + slight surface lift when the fill is too close to the lane.
           const Color groupFillColor = resolveColorSpec(group->fill);
-          const Color laneBgColor = colorForRole(ColorRole::SurfaceVariant);
+          const Color laneBgColor = colorForRole(ColorRole::SurfaceContainer);
           const float dr = groupFillColor.r - laneBgColor.r;
           const float dg = groupFillColor.g - laneBgColor.g;
           const float db = groupFillColor.b - laneBgColor.b;
@@ -3285,7 +3285,7 @@ namespace settings {
             groupBorder = group->fill; // full opacity
           } else {
             groupFillTint = colorSpecFromRole(ColorRole::OnSurface, 0.06F); // slight neutral lift
-            groupBorder = colorSpecFromRole(ColorRole::Outline);            // full opacity
+            groupBorder = colorSpecFromRole(ColorRole::OutlineVariant);     // full opacity
           }
           auto container = ui::column({
               .align = FlexAlign::Stretch,
@@ -3316,7 +3316,7 @@ namespace settings {
                   .width = Style::fontSizeCaption * ctx.scale,
                   .height = Style::fontSizeCaption * ctx.scale,
                   .configure = [](Box& box) {
-                    box.setBorder(colorSpecFromRole(ColorRole::Outline), Style::borderWidth);
+                    box.setBorder(colorSpecFromRole(ColorRole::OutlineVariant), Style::borderWidth);
                   },
               })
           );
@@ -3562,9 +3562,9 @@ namespace settings {
                     .gap = 2.0F * ctx.scale,
                     .paddingV = Style::spaceMd * ctx.scale,
                     .paddingH = Style::spaceSm * ctx.scale,
-                    .fill = colorSpecFromRole(ColorRole::SurfaceVariant, 0.25F),
+                    .fill = colorSpecFromRole(ColorRole::SurfaceContainer, 0.25F),
                     .radius = Style::scaledRadiusSm(ctx.scale),
-                    .border = colorSpecFromRole(ColorRole::Outline),
+                    .border = colorSpecFromRole(ColorRole::OutlineVariant),
                 },
                 makeLabel(
                     i18n::tr("settings.entities.widget.lanes.empty"), Style::fontSizeCaption * ctx.scale,

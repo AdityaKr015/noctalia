@@ -129,7 +129,7 @@ namespace capture {
       const Color fill = rgba(color.r, color.g, color.b, 1.0F);
       Button::ButtonStateColors state{
           .bg = fixedColorSpec(fill),
-          .border = colorSpecFromRole(ColorRole::Outline),
+          .border = colorSpecFromRole(ColorRole::OutlineVariant),
           .label = fixedColorSpec(swatchContrast(color)),
       };
       Button::ButtonPalette palette;
@@ -964,7 +964,7 @@ namespace capture {
       canvas->addChild(
           ui::box({
               .fill = fixedColorSpec(rgba(0.0F, 0.0F, 0.0F, 0.0F)),
-              .border = colorSpecFromRole(ColorRole::Outline),
+              .border = colorSpecFromRole(ColorRole::OutlineVariant),
               .borderWidth = Style::borderWidth,
               .radius = 0.0F,
               .width = canvasW,
@@ -1138,7 +1138,7 @@ namespace capture {
         .paddingH = Style::spaceMd,
         .fill = fixedColorSpec(toolbarFill),
         .radius = Style::radiusXl,
-        .border = colorSpecFromRole(ColorRole::Outline),
+        .border = colorSpecFromRole(ColorRole::OutlineVariant),
         .borderWidth = Style::borderWidth,
     });
 

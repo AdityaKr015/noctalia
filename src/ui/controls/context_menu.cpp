@@ -363,7 +363,7 @@ void ContextMenuControl::rebuildRows(Renderer& renderer) {
         const float dotSize = std::round(kMenuFontSize * scale);
         auto dot = std::make_unique<Box>();
         dot->setFill(*entry.indicatorColor);
-        dot->setBorder(colorSpecFromRole(ColorRole::Outline), 1.5F);
+        dot->setBorder(colorSpecFromRole(ColorRole::OutlineVariant), 1.5F);
         dot->setFrameSize(dotSize, dotSize);
         dot->setRadius(dotSize * 0.5F);
         dot->setPosition(8.0F * scale + indent + toggleSlot, std::round((rowHeight - dotSize) * 0.5F));

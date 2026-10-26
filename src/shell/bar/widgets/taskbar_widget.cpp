@@ -1658,7 +1658,7 @@ void TaskbarWidget::buildTaskButtons(Renderer& renderer) {
       const bool emptyWorkspace = tasks.empty();
       const bool focusedWorkspace = workspaceUsesFocusedStyle(ws);
 
-      const auto surfaceFill = colorSpecFromRole(ColorRole::SurfaceVariant, focusedWorkspace ? 0.52F : 0.18F);
+      const auto surfaceFill = colorSpecFromRole(ColorRole::SurfaceContainer, focusedWorkspace ? 0.52F : 0.18F);
 
       const auto borderColor = colorSpecFromRole(ColorRole::Primary, focusedWorkspace ? 0.65F : 0.16F);
 
@@ -3687,15 +3687,31 @@ ColorRole TaskbarWidget::onRoleForFill(ColorRole fill) {
     return ColorRole::OnTertiary;
   case ColorRole::Error:
     return ColorRole::OnError;
+  case ColorRole::PrimaryContainer:
+    return ColorRole::OnPrimaryContainer;
+  case ColorRole::SecondaryContainer:
+    return ColorRole::OnSecondaryContainer;
+  case ColorRole::TertiaryContainer:
+    return ColorRole::OnTertiaryContainer;
+  case ColorRole::ErrorContainer:
+    return ColorRole::OnErrorContainer;
   case ColorRole::Surface:
-  case ColorRole::SurfaceVariant:
-  case ColorRole::Outline:
+  case ColorRole::SurfaceContainerLow:
+  case ColorRole::SurfaceContainer:
+  case ColorRole::SurfaceContainerHigh:
+  case ColorRole::SurfaceContainerHighest:
+  case ColorRole::OutlineVariant:
   case ColorRole::Shadow:
+  case ColorRole::Scrim:
   case ColorRole::Hover:
   case ColorRole::OnPrimary:
+  case ColorRole::OnPrimaryContainer:
   case ColorRole::OnSecondary:
+  case ColorRole::OnSecondaryContainer:
   case ColorRole::OnTertiary:
+  case ColorRole::OnTertiaryContainer:
   case ColorRole::OnError:
+  case ColorRole::OnErrorContainer:
   case ColorRole::OnSurface:
   case ColorRole::OnSurfaceVariant:
   case ColorRole::OnHover:

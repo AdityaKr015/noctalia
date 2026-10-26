@@ -672,7 +672,7 @@ void ClipboardPanel::create() {
   const bool listItemBackground = m_config != nullptr && m_config->config().shell.panel.listItemBackground;
   m_listAdapter = std::make_unique<ClipboardListAdapter>(
       scale, m_clipboard, m_asyncTextures,
-      listItemBackground ? std::optional(colorSpecFromRole(ColorRole::SurfaceVariant, panelCardOpacity()))
+      listItemBackground ? std::optional(colorSpecFromRole(ColorRole::SurfaceContainer, panelCardOpacity()))
                          : std::nullopt
   );
   m_listAdapter->setFilteredIndices(&m_filteredIndices);

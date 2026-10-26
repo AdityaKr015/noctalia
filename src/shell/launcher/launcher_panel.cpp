@@ -199,7 +199,7 @@ namespace {
       style.compact = launcher.compact;
       style.appIconColorizeTint = effectiveShellAppIconColorizationTint(config->config().shell);
       if (config->config().shell.panel.listItemBackground) {
-        style.listItemBackground = colorSpecFromRole(ColorRole::SurfaceVariant, cardOpacity);
+        style.listItemBackground = colorSpecFromRole(ColorRole::SurfaceContainer, cardOpacity);
       }
     }
     return style;

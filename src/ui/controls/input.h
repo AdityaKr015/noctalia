@@ -67,7 +67,7 @@ public:
   void setSubmitOnEnter(bool enabled);
   void setEnabled(bool enabled);
   void setSurfaceOpacity(float opacity);
-  /// Unfocused frame fill. Fields on a SurfaceVariant card use Surface so they stand out; focus always fills with
+  /// Unfocused frame fill. Fields on a SurfaceContainer card use Surface so they stand out; focus always fills with
   /// Surface.
   void setSurfaceRole(ColorRole role);
   void setFrameRadius(float radius);
@@ -256,7 +256,7 @@ private:
   bool m_invalid = false;
   bool m_frameVisible = true;
   bool m_embeddedOnSolidPrimary = false;
-  ColorRole m_surfaceRole = ColorRole::SurfaceVariant;
+  ColorRole m_surfaceRole = ColorRole::SurfaceContainer;
   float m_surfaceOpacity = 1.0F;
   float m_frameRadius = Style::radiusMd;
   bool m_enabled = true;
