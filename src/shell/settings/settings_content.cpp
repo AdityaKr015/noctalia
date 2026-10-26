@@ -435,9 +435,7 @@ namespace settings {
               .borderWidth = 1.0F * scale,
               .normal =
                   Button::ButtonStateColors{
-                      .bg = colorSpecFromRole(
-                          active ? ColorRole::Primary : ColorRole::SurfaceContainer, active ? 1.0F : 0.45F
-                      ),
+                      .bg = colorSpecFromRole(active ? ColorRole::Primary : ColorRole::SurfaceContainerLow),
                       .border = active ? colorSpecFromRole(ColorRole::Primary, 0.9F)
                                        : colorSpecFromRole(ColorRole::OutlineVariant, Style::disabledOutlineAlpha),
                       .label = colorSpecFromRole(active ? ColorRole::OnPrimary : ColorRole::OnSurface),
@@ -1486,7 +1484,7 @@ namespace settings {
            .justify = FlexJustify::Center,
            .gap = Style::spaceSm * scale,
            .padding = (Style::spaceLg * 2.0F) * scale,
-           .fill = colorSpecFromRole(ColorRole::SurfaceContainer, 0.24F),
+           .fill = colorSpecFromRole(ColorRole::SurfaceContainerLow),
            .radius = Style::scaledRadiusMd(scale),
            .border = colorSpecFromRole(ColorRole::OutlineVariant),
            .minWidth = 360.0F * scale,

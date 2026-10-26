@@ -51,7 +51,7 @@ namespace settings {
         setAlign(FlexAlign::Stretch);
         setGap(Style::spaceXs * scale);
         setPadding(Style::spaceSm * scale);
-        setFill(colorSpecFromRole(ColorRole::SurfaceContainer, 0.45F));
+        setFill(colorSpecFromRole(ColorRole::SurfaceContainerLow));
         setBorder(colorSpecFromRole(ColorRole::OutlineVariant, Style::disabledOutlineAlpha), Style::borderWidth);
         setRadius(Style::scaledRadiusMd(scale));
         addChild(
