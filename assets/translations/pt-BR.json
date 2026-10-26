@@ -29,7 +29,7 @@
   "bar": {
     "annotate": {
       "capture-new-region": "Capturar nova região (descarta a edição atual)",
-      "close": "Fechar sem aplicar (Esc)",
+      "close": "Fechar editor",
       "color-black": "Preto",
       "color-blue": "Azul",
       "color-green": "Verde",
@@ -288,7 +288,11 @@
     "calendar": {
       "all-day": "O dia todo",
       "events": "Eventos",
+      "hide-past-events": "Ocultar {count} evento passado",
+      "hide-past-events-plural": "Ocultar {count} eventos passados",
       "no-events": "Nenhum evento.",
+      "show-past-events": "Mostrar {count} evento passado",
+      "show-past-events-plural": "Mostrar {count} eventos passados",
       "today": "Hoje",
       "toggle-events-card": "Ligar card de eventos"
     },
@@ -2814,6 +2818,10 @@
           "description": "Exibir ícones dos aplicativos nos resultados do launcher",
           "label": "Exibir Ícones dos Apps"
         },
+        "launcher-show-navigation-labels": {
+          "description": "Mostrar texto ao lado de ícones de Recente, Fixado, Todos, Categories e Provedores quando o espaço permite",
+          "label": "Mostrar Rótulos de Navegação"
+        },
         "launcher-show-session-button": {
           "description": "Mostrar um atalho para as ações de sessão configuradas",
           "label": "Mostrar Botão de Sessão"
@@ -2999,6 +3007,14 @@
         "calendar-event-time-format": {
           "description": "O formato de hora mostrado para eventos de calendário nas visões do calendário",
           "label": "Formato de Hora do Evento"
+        },
+        "calendar-hide-past-events": {
+          "description": "Ocultar eventos finalizados de hoje da lista de eventos; quando desligado, todos eventos passados são mostrados",
+          "label": "Ocultar Eventos Passados"
+        },
+        "calendar-past-events-threshold": {
+          "description": "Com Ocultar Eventos Passados ligado, mantenha eventos de hoje visíveis por esta quantidade de minutos depois deles terem acabado; 0 oculta-os assim que acabam",
+          "label": "Limite de Eventos Passados"
         },
         "calendar-refresh-interval": {
           "description": "Com que frequência sincronizar eventos do calendário (minutos)",
@@ -3508,6 +3524,10 @@
         "screenshot-confirm-region": {
           "description": "Depois de desenhar uma região, manter o overlay aberto até confirmar com Enter ou Espaço",
           "label": "Confirmar Região"
+        },
+        "screenshot-copy-on-close": {
+          "description": "Copiar a imagem anotada para a área de transferência ao fechar o editor com a tecla de cancelar ou o botão de fechar",
+          "label": "Copiar ao Fechar"
         },
         "screenshot-copy-to-clipboard": {
           "description": "Coloca o PNG capturado na seleção da área de transferência",
@@ -4850,6 +4870,10 @@
           "description": "Mostra texto com as condições meteorológicas",
           "label": "Mostrar Condição"
         },
+        "show-cpu-cores": {
+          "description": "Substituir o único medidor de CPU com uma medidor pequeno por núcleo lógico",
+          "label": "Mostrar Uso Por Core"
+        },
         "show-empty-label": {
           "description": "Exibe o placeholder quando nenhuma janela estiver em foco, em vez de ocultar o widget",
           "label": "Mostrar Rótulo Vazio"
@@ -4991,6 +5015,10 @@
           "description": "Largura máxima em pixels dos títulos de janela",
           "label": "Largura Máxima do Título de Janela"
         },
+        "workspace-group-active-border-color": {
+          "description": "Cor de borda para o espaço de trabalho ativo",
+          "label": "Cor de Borda Ativa"
+        },
         "workspace-group-capsule": {
           "description": "Desenha o fundo e a borda ao redor de cada workspace agrupado. Desligue para manter apenas o agrupamento de ícones e os rótulos circulares dos workspaces",
           "label": "Cápsula do grupo de Espaço de Trabalho"
@@ -4998,6 +5026,10 @@
         "workspace-group-content": {
           "description": "O que cada grupo de espaços de trabalho exibe: ícones de aplicativos, o número de janelas ou pontos (até cinco, e depois +N para o restante)",
           "label": "Agrupar Conteúdo"
+        },
+        "workspace-group-inactive-border-color": {
+          "description": "Cor de borda para espaços de trabalho inativos",
+          "label": "Cor de Borda Inativa"
         },
         "workspace-label-placement": {
           "description": "No canto, centralizado na extremidade ou dentro de uma pílula",
