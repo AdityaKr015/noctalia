@@ -3008,6 +3008,14 @@
           "description": "The time format shown for calendar events in calendar views",
           "label": "Event Time Format"
         },
+        "calendar-hide-past-events": {
+          "description": "Hide today's finished events from the event list; when off, all past events are shown",
+          "label": "Hide Past Events"
+        },
+        "calendar-past-events-threshold": {
+          "description": "With Hide Past Events on, keep today's events visible for this many minutes after they end (0 hides them as soon as they end)",
+          "label": "Past Events Threshold"
+        },
         "calendar-refresh-interval": {
           "description": "How often to sync calendar events (minutes)",
           "label": "Refresh Interval"
@@ -3035,14 +3043,6 @@
           "description-recovery": "The calendar event cache could not be authenticated or is damaged; retry after restoring the correct key, or reset private storage",
           "description-unavailable": "No Secret Service provider is available; calendar events remain available for this session only",
           "label": "Calendar Event Storage"
-        },
-        "calendar-hide-past-events": {
-          "description": "Hide today's finished events from the event list; when off, all past events are shown",
-          "label": "Hide Past Events"
-        },
-        "calendar-past-events-threshold": {
-          "description": "With Hide Past Events on, keep today's events visible for this many minutes after they end (0 hides them as soon as they end)",
-          "label": "Past Events Threshold"
         },
         "calendar-week-numbers": {
           "description": "Show ISO 8601 week numbers alongside the calendar grid",
