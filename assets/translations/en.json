@@ -3509,13 +3509,13 @@
           "description": "Close after a successful save from the editor, including when opened directly",
           "label": "Close Editor After Saving"
         },
-        "screenshot-copy-on-close": {
-          "description": "Copy the annotated image to the clipboard when closing the editor with the cancel key or close button",
-          "label": "Copy on Close"
-        },
         "screenshot-confirm-region": {
           "description": "After drawing a region, keep the overlay open until you confirm with Enter or Space",
           "label": "Confirm Region"
+        },
+        "screenshot-copy-on-close": {
+          "description": "Copy the annotated image to the clipboard when closing the editor with the cancel key or close button",
+          "label": "Copy on Close"
         },
         "screenshot-copy-to-clipboard": {
           "description": "Place the captured PNG on the clipboard selection",
@@ -5007,10 +5007,6 @@
           "description": "Border color for the active workspace",
           "label": "Active Border Color"
         },
-        "workspace-group-inactive-border-color": {
-          "description": "Border color for inactive workspaces",
-          "label": "Inactive Border Color"
-        },
         "workspace-group-capsule": {
           "description": "Draw the background and border around each grouped workspace. Turn off to keep icon grouping and workspace disc labels only.",
           "label": "Workspace Group Capsule"
@@ -5018,6 +5014,10 @@
         "workspace-group-content": {
           "description": "What each workspace group shows: app icons, a window count, or dots (up to five, then +N for the rest)",
           "label": "Group Content"
+        },
+        "workspace-group-inactive-border-color": {
+          "description": "Border color for inactive workspaces",
+          "label": "Inactive Border Color"
         },
         "workspace-label-placement": {
           "description": "Corner, centered on the edge, or inside the pill",
