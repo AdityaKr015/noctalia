@@ -121,6 +121,10 @@ The documentation site is generated from these files by `tools/sync-docs.sh`, wh
 
 Do not patch vendored code under `third_party/` for Noctalia behavior; local edits are lost when the dependency is refreshed. Put compatibility code in Noctalia-owned sources under `src/`, or fix the issue upstream and update the vendored snapshot from upstream.
 
+### Palette colors
+
+Fills, tints, and borders use a palette role: `surface_container_low` to `surface_container_highest` for raised backgrounds, the `*_container` roles for tinted fills, and `outline_variant` for borders. Do not blend a role with a hardcoded alpha (`colorSpecFromRole(ColorRole::Primary, 0.16F)`) to get a color the palette does not have; if no role fits, propose a new one. Alpha is for real transparency only: shadows, scrims, overlays, disabled content, and hover or pressed state layers, ideally through a named `Style` constant. `just role-alpha-check` (run in CI) counts role-plus-literal-alpha uses and fails when the count goes up; after removing some, run `just role-alpha-update` to lower the baseline.
+
 ## Testing
 
 Unit tests are not required for every change. Choose the verification that exercises the changed behavior most directly, and describe it in the pull request's Testing section.
