@@ -120,7 +120,7 @@ namespace {
     auto block = ui::column({
         .align = FlexAlign::Start,
         .padding = pad,
-        .fill = colorSpecFromRole(ColorRole::SurfaceContainer, 0.5F),
+        .fill = colorSpecFromRole(ColorRole::SurfaceContainerLow),
         .radius = Style::scaledRadiusSm(ctx.scale),
         .fillWidth = true,
     });
@@ -209,7 +209,7 @@ namespace {
       const ColorSpec background = isHeader
           ? colorSpecFromRole(ColorRole::SurfaceContainer)
           : (bodyRowIndex % 2 == 0 ? colorSpecFromRole(ColorRole::Surface)
-                                   : colorSpecFromRole(ColorRole::SurfaceContainer, 0.5F));
+                                   : colorSpecFromRole(ColorRole::SurfaceContainerLow));
       auto row = ui::row({
           .align = FlexAlign::Stretch,
           .gap = 0.0F,

@@ -345,13 +345,13 @@ void KeybindRecorder::applyVisualState(VisualState state) {
     }
     break;
   case VisualState::Recording:
-    setFill(colorSpecFromRole(ColorRole::Primary, 0.12F));
+    setFill(colorSpecFromRole(ColorRole::PrimaryContainer));
     setBorder(colorSpecFromRole(ColorRole::Primary), Style::borderWidth);
     if (m_label != nullptr) {
-      m_label->setColor(colorSpecFromRole(ColorRole::Primary));
+      m_label->setColor(colorSpecFromRole(ColorRole::OnPrimaryContainer));
     }
     if (m_glyph != nullptr) {
-      m_glyph->setColor(colorSpecFromRole(ColorRole::Primary));
+      m_glyph->setColor(colorSpecFromRole(ColorRole::OnPrimaryContainer));
     }
     break;
   }

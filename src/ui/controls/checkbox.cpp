@@ -143,7 +143,7 @@ void Checkbox::applyState() {
       borderWidth = Style::emphasizedBorderWidth * m_scale;
     }
   } else if (focused) {
-    fill = colorSpecFromRole(ColorRole::Secondary, 0.18F);
+    fill = colorSpecFromRole(ColorRole::SecondaryContainer);
     border = colorSpecFromRole(ColorRole::Secondary);
     borderWidth = Style::emphasizedBorderWidth * m_scale;
   } else if (hovered()) {
