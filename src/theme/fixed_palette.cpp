@@ -231,18 +231,10 @@ namespace noctalia::theme {
     const Color hover = toUiColor(palette.hover);
     const Color onHover = toUiColor(palette.onHover);
 
-    auto makeContainerDark = [](const Color& base) {
-      auto [h, s, l] = base.toHsl();
-      // Scale the saturation step by the remaining headroom instead of adding a
-      // constant: on already-saturated accents (e.g. pastel palettes with S near
-      // 1.0) a flat +0.15 clamps at the gamut wall while L still drops into the
-      // midtones, producing a neon "container" instead of a muted one.
-      return Color::fromHsl(h, s + 0.15 * (1.0 - s), std::max(l - 0.35, 0.15));
-    };
-    auto makeContainerLight = [](const Color& base) {
-      auto [h, s, l] = base.toHsl();
-      return Color::fromHsl(h, std::max(s - 0.20, 0.30), std::min(l + 0.35, 0.85));
-    };
+    // A container is the accent mixed into the palette's own surface, so it keeps the accent's
+    // identity (a pastel stays pastel) at a lower emphasis. Its content color is the accent itself,
+    // adjusted only when it lacks contrast.
+    auto makeContainer = [&surface](const Color& accent) { return interpolateColor(surface, accent, 0.30); };
     auto makeFixedDark = [](const Color& base) {
       auto [h, s, _] = base.toHsl();
       return std::make_tuple(Color::fromHsl(h, std::max(s, 0.70), 0.85), Color::fromHsl(h, std::max(s, 0.65), 0.75));
@@ -252,27 +244,19 @@ namespace noctalia::theme {
       return std::make_tuple(Color::fromHsl(h, std::max(s, 0.70), 0.40), Color::fromHsl(h, std::max(s, 0.65), 0.30));
     };
 
-    const Color primaryContainer = isDark ? makeContainerDark(primary) : makeContainerLight(primary);
-    const Color secondaryContainer = isDark ? makeContainerDark(secondary) : makeContainerLight(secondary);
-    const Color tertiaryContainer = isDark ? makeContainerDark(tertiary) : makeContainerLight(tertiary);
-    const Color errorContainer = isDark ? makeContainerDark(error) : makeContainerLight(error);
+    const Color primaryContainer = makeContainer(primary);
+    const Color secondaryContainer = makeContainer(secondary);
+    const Color tertiaryContainer = makeContainer(tertiary);
+    const Color errorContainer = makeContainer(error);
 
     const auto [primaryH, primaryS, _primaryL] = primary.toHsl();
     const auto [secondaryH, secondaryS, _secondaryL] = secondary.toHsl();
     const auto [tertiaryH, tertiaryS, _tertiaryL] = tertiary.toHsl();
-    const auto [errorH, errorS, _errorL] = error.toHsl();
 
-    const Color onPrimaryContainer = isDark
-        ? ensureContrast(Color::fromHsl(primaryH, primaryS, 0.90), primaryContainer, 4.5)
-        : ensureContrast(Color::fromHsl(primaryH, primaryS, 0.15), primaryContainer, 4.5);
-    const Color onSecondaryContainer = isDark
-        ? ensureContrast(Color::fromHsl(secondaryH, secondaryS, 0.90), secondaryContainer, 4.5)
-        : ensureContrast(Color::fromHsl(secondaryH, secondaryS, 0.15), secondaryContainer, 4.5);
-    const Color onTertiaryContainer = isDark
-        ? ensureContrast(Color::fromHsl(tertiaryH, tertiaryS, 0.90), tertiaryContainer, 4.5)
-        : ensureContrast(Color::fromHsl(tertiaryH, tertiaryS, 0.15), tertiaryContainer, 4.5);
-    const Color onErrorContainer = isDark ? ensureContrast(Color::fromHsl(errorH, errorS, 0.90), errorContainer, 4.5)
-                                          : ensureContrast(Color::fromHsl(errorH, errorS, 0.15), errorContainer, 4.5);
+    const Color onPrimaryContainer = ensureContrast(primary, primaryContainer, 4.5);
+    const Color onSecondaryContainer = ensureContrast(secondary, secondaryContainer, 4.5);
+    const Color onTertiaryContainer = ensureContrast(tertiary, tertiaryContainer, 4.5);
+    const Color onErrorContainer = ensureContrast(error, errorContainer, 4.5);
 
     const auto [primaryFixed, primaryFixedDim] = isDark ? makeFixedDark(primary) : makeFixedLight(primary);
     const auto [secondaryFixed, secondaryFixedDim] = isDark ? makeFixedDark(secondary) : makeFixedLight(secondary);
