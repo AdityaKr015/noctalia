@@ -511,8 +511,9 @@ namespace ui {
       static const std::unordered_set<std::string> kSeparator = {"width",   "height",  "flexGrow",
                                                                  "opacity", "visible", "thickness",
                                                                  "color",   "spacing", "orientation"};
-      static const std::unordered_set<std::string> kProgress = {"width",    "height", "flexGrow", "opacity", "visible",
-                                                                "progress", "fill",   "track",    "radius"};
+      static const std::unordered_set<std::string> kProgress = {"width",   "height",   "flexGrow",   "opacity",
+                                                                "visible", "progress", "fill",       "track",
+                                                                "radius",  "marker",   "markerColor"};
       static const std::unordered_set<std::string> kButton = {"width",       "height",  "flexGrow",     "opacity",
                                                               "visible",     "text",    "glyph",        "fontSize",
                                                               "glyphSize",   "variant", "contentAlign", "enabled",
@@ -1768,6 +1769,16 @@ namespace ui {
       }
       if (const double* radius = numProp(desired, "radius")) {
         progress->setRadius(scaled(*radius));
+      }
+      // An absent marker clears the line, so a tree can drop it without restructuring.
+      if (const double* marker = numProp(desired, "marker")) {
+        progress->setMarkerWidth(Style::progressMarkerWidth * m_scale);
+        progress->setMarker(static_cast<float>(*marker));
+      } else {
+        progress->clearMarker();
+      }
+      if (auto markerColor = parseColor(desired, "markerColor")) {
+        progress->setMarkerColor(*markerColor);
       }
       progress->setSize(
           width != nullptr ? scaled(*width) : node->width(), height != nullptr ? scaled(*height) : node->height()
