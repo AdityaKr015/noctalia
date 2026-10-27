@@ -76,6 +76,14 @@ void Label::setFontFamily(std::string family) {
   m_measureCached = false;
 }
 
+void Label::setFontFeatures(std::string features) {
+  if (m_textNode->fontFeatures() == features) {
+    return;
+  }
+  m_textNode->setFontFeatures(std::move(features));
+  m_measureCached = false;
+}
+
 void Label::setColor(const ColorSpec& color) {
   m_color = color;
   applyPalette();

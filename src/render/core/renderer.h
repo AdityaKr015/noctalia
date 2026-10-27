@@ -31,10 +31,12 @@ enum class FontWeight : int {
 };
 
 // Font selection for a run of text. An empty family means the renderer-global
-// family (shell.font_family).
+// family (shell.font_family). `features` is an OpenType feature list in Pango's
+// font-features syntax (e.g. "tnum"); empty applies the font defaults.
 struct TextFont {
   FontWeight weight = FontWeight::Normal;
   std::string family;
+  std::string features;
 
   bool operator==(const TextFont&) const = default;
 };
