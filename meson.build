@@ -1241,6 +1241,7 @@ if build_tests
     'format_units',
     'freedesktop_key_file',
     'firefox_theme_manifest',
+    'font_family_catalog',
     'google_client_calendar_list',
     'google_client_reminders',
     'greeter_appearance_sync',
