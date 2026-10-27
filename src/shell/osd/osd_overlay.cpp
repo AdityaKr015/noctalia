@@ -71,6 +71,8 @@ namespace {
       return kinds.keyboardLayout;
     case OsdKind::Media:
       return kinds.media;
+    case OsdKind::MediaVolume:
+      return kinds.media && kinds.mediaVolume;
     case OsdKind::Privacy:
       return kinds.privacy;
     case OsdKind::KeyboardBacklight:
