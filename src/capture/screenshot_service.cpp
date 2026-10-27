@@ -45,6 +45,7 @@
 #include <format>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <sstream>
 #include <stb/stb_image_resize2.h>
 #include <sys/wait.h>
 #include <thread>
@@ -164,8 +165,14 @@ namespace {
     int y = 0;
     int width = 0;
     int height = 0;
-    const std::string copy(text);
-    if (std::sscanf(copy.c_str(), "%d,%d,%d,%d", &x, &y, &width, &height) != 4) {
+    std::istringstream input{std::string(text)};
+    char firstSeparator = 0;
+    char secondSeparator = 0;
+    char thirdSeparator = 0;
+    if (!(input >> x >> firstSeparator >> y >> secondSeparator >> width >> thirdSeparator >> height)
+        || firstSeparator != ','
+        || secondSeparator != ','
+        || thirdSeparator != ',') {
       return std::nullopt;
     }
     if (width < 2 || height < 2) {
@@ -174,7 +181,7 @@ namespace {
     return LogicalRect{.x = x, .y = y, .width = width, .height = height};
   }
 
-  [[nodiscard]] std::string defaultFilenamePattern() { return "screenshot_%Y%m%d_%H%M%S"; }
+  [[nodiscard]] std::string_view defaultFilenamePattern() { return "screenshot_%Y%m%d_%H%M%S"; }
   [[nodiscard]] std::string primaryKeybindLabel(const std::vector<KeyChord>& configured, KeybindAction action) {
     if (!configured.empty()) {
       return keyChordDisplayLabel(configured.front());
@@ -186,7 +193,7 @@ namespace {
   [[nodiscard]] std::string formatFilenameStem(std::string_view pattern, const std::string& labelBase, int suffix) {
     const auto now = std::chrono::system_clock::now();
     const auto unixSeconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-    const std::string resolvedPattern = pattern.empty() ? defaultFilenamePattern() : std::string(pattern);
+    const std::string_view resolvedPattern = pattern.empty() ? defaultFilenamePattern() : pattern;
     std::string stem = formatLocalUnixTime(unixSeconds, resolvedPattern);
     if (stem.empty()) {
       stem = "screenshot";
@@ -312,7 +319,7 @@ namespace {
     std::string screenshotPathString = screenshotPath.has_value() ? screenshotPath->string() : std::string{};
 
     std::thread([command = std::move(command), png = std::move(png),
-                 screenshotPathString = std::move(screenshotPathString)]() {
+                 screenshotPathString = std::move(screenshotPathString)] {
       // Block SIGPIPE on this thread so a command that stops reading stdin makes
       // write() fail with EPIPE instead of terminating the whole process.
       sigset_t pipeMask;
@@ -413,7 +420,7 @@ namespace {
       if (!knownOutputs.empty()) {
         error += " (available: " + StringUtils::join(knownOutputs, ", ") + ")";
       }
-      error += "\n";
+      error += '\n';
       return std::unexpected(std::move(error));
     }
     if (matches.size() > 1) {
@@ -824,11 +831,12 @@ bool ScreenshotService::onPointerEvent(const PointerEvent& event) {
 }
 
 bool ScreenshotService::onKeyboardEvent(const KeyboardEvent& event) {
-  if (m_annotationOverlay != nullptr && m_annotationOverlay->isActive()) {
-    if (m_annotationOverlay->onKeyboardEvent(event)) {
-      return true;
-    }
+  if (m_annotationOverlay != nullptr
+      && m_annotationOverlay->isActive()
+      && m_annotationOverlay->onKeyboardEvent(event)) {
+    return true;
   }
+
   if (!event.pressed) {
     return false;
   }
@@ -1171,7 +1179,7 @@ void ScreenshotService::beginRegionCapture(RenderContext& renderContext, const O
   m_regionFullscreenPick = false;
 
   if (options.freezeScreen) {
-    DeferredCall::callLater([this]() { beginFreezeCapture(); });
+    DeferredCall::callLater([this] { beginFreezeCapture(); });
     return;
   }
 
@@ -1203,7 +1211,7 @@ void ScreenshotService::beginFullscreenCapture(RenderContext& renderContext, con
   m_regionFullscreenPick = true;
 
   if (options.freezeScreen) {
-    DeferredCall::callLater([this]() { beginFreezeCapture(); });
+    DeferredCall::callLater([this] { beginFreezeCapture(); });
     return;
   }
 
@@ -1377,7 +1385,7 @@ void ScreenshotService::onFreezeFrameCaptured(
     m_frozenScreenshots.push_back(capture::FrozenScreenshot{.output = request.output, .image = std::move(*image)});
   }
 
-  DeferredCall::callLater([this]() { startNextFreezeCapture(); });
+  DeferredCall::callLater([this] { startNextFreezeCapture(); });
 }
 
 void ScreenshotService::finishFreezeCapture() {
@@ -1526,12 +1534,12 @@ void ScreenshotService::ensureAnnotationOverlay() {
     m_pendingDelivery.reset();
     notifyError(message);
   });
-  m_annotationOverlay->setClosedCallback([this]() { m_pendingDelivery.reset(); });
+  m_annotationOverlay->setClosedCallback([this] { m_pendingDelivery.reset(); });
   m_annotationOverlay->setBackdropChangedCallback([this](const capture::ScreenshotBackdropSettings& backdrop) {
     persistScreenshotBackdrop(backdrop);
   });
   m_annotationOverlay->setFeedbackCallback([this](const std::string& message) { notifyError(message); });
-  m_annotationOverlay->setFreezeCallback([this]() {
+  m_annotationOverlay->setFreezeCallback([this] {
     if (m_annotationOverlay == nullptr || !m_annotationOverlay->isActive()) {
       return;
     }
@@ -1545,7 +1553,7 @@ void ScreenshotService::ensureAnnotationOverlay() {
     m_freezeTarget = FreezeTarget::Annotation;
     beginFreezeCapture();
   });
-  m_annotationOverlay->setCaptureRegionCallback([this]() {
+  m_annotationOverlay->setCaptureRegionCallback([this] {
     if (m_annotationOverlay == nullptr || !m_annotationOverlay->isActive()) {
       return;
     }
@@ -1587,7 +1595,7 @@ void ScreenshotService::ensureAnnotationOverlay() {
     if (delivered
         && ((action == capture::AnnotationExport::Copy && options.closeOnCopy)
             || (action == capture::AnnotationExport::Save && options.closeOnSave))) {
-      DeferredCall::callLater([this]() { m_annotationOverlay->cancel(); });
+      DeferredCall::callLater([this] { m_annotationOverlay->cancel(); });
     }
   });
 }
@@ -1609,7 +1617,7 @@ void ScreenshotService::beginAnnotation(RenderContext& renderContext, const Outp
 
   if (freezeFirst) {
     m_freezeTarget = FreezeTarget::Annotation;
-    DeferredCall::callLater([this]() { beginFreezeCapture(); });
+    DeferredCall::callLater([this] { beginFreezeCapture(); });
     return;
   }
 
@@ -1790,7 +1798,7 @@ void ScreenshotService::onGlobalRegionFrameCaptured(
           .image = std::move(*image),
       }
   );
-  DeferredCall::callLater([this]() { startNextGlobalRegionCapture(); });
+  DeferredCall::callLater([this] { startNextGlobalRegionCapture(); });
 }
 
 void ScreenshotService::finishGlobalRegionBatch() {
@@ -1917,7 +1925,7 @@ void ScreenshotService::startNextQueuedCapture() {
   if (m_captureQueue.empty() || m_capture.busy()) {
     return;
   }
-  DeferredCall::callLater([this]() {
+  DeferredCall::callLater([this] {
     if (m_captureQueue.empty() || m_capture.busy()) {
       return;
     }
@@ -2020,7 +2028,7 @@ void ScreenshotService::onAllOutputsFrameCaptured(
   }
 
   m_allOutputsBatch->frames.push_back(capture::FrozenScreenshot{.output = output, .image = std::move(*image)});
-  DeferredCall::callLater([this]() { startNextAllOutputsCapture(); });
+  DeferredCall::callLater([this] { startNextAllOutputsCapture(); });
 }
 
 void ScreenshotService::finishAllOutputsBatch() {
@@ -2225,7 +2233,7 @@ bool ScreenshotService::finishDelivery(
 }
 
 void ScreenshotService::onCaptureComplete(
-    std::optional<capture::ScreenshotImage> image, const std::string& error, OutputOptions options,
+    std::optional<capture::ScreenshotImage> image, const std::string& error, const OutputOptions& options,
     std::optional<std::filesystem::path> destPath
 ) {
   if (!error.empty() || !image.has_value()) {
