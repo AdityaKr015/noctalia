@@ -75,6 +75,8 @@ clang-tidy -p build-debug --warnings-as-errors='*' <touched .cpp files...>
 
 Headers are linted through the `.cpp` files that include them. Fix every finding before opening a pull request.
 
+sdbus-c++ async reply handlers take the error as `std::optional<sdbus::Error>` by value. sdbus-c++ releases before 2.3 (shipped by Fedora 44, Debian 13, and Ubuntu 26.04) do not recognize a `const&` error parameter, so the code fails to compile there even though it builds on Arch. Suppress the resulting clang-tidy finding on that lambda with `// NOLINT(performance-unnecessary-value-param)`. The `Build (Fedora 44)` CI job guards this.
+
 ### Naming Conventions
 
 |                        | Convention           | Example              |
