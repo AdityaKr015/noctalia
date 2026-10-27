@@ -1,6 +1,7 @@
 #pragma once
 
 #include "capture/annotation_document.h"
+#include "capture/screenshot_backdrop.h"
 #include "capture/screenshot_image.h"
 
 #include <array>
@@ -69,6 +70,9 @@ namespace capture {
     using FailureCallback = std::function<void(const std::string& message)>;
     using FeedbackCallback = std::function<void(const std::string& message)>;
     using StateSetter = std::function<void(std::string_view key, std::string_view value)>;
+    using BackdropConfig = ScreenshotBackdropSettings;
+    // Fired once when the editor closes, if the backdrop panel changed anything.
+    using BackdropChangedCallback = std::function<void(const BackdropConfig& backdrop)>;
 
     AnnotationOverlay();
     ~AnnotationOverlay();
@@ -81,6 +85,13 @@ namespace capture {
     void setFailureCallback(FailureCallback callback);
     void setFeedbackCallback(FeedbackCallback callback);
     void setStateSetter(StateSetter setter);
+    void setBackdropChangedCallback(BackdropChangedCallback callback);
+
+    // Image mode previews this backdrop around the capture and edits it from the backdrop panel; it is the
+    // only source of the screenshot backdrop. Set it before beginImage(); the canvas reserves room for
+    // the padding it starts with.
+    void setScreenshotBackdrop(const BackdropConfig& backdrop);
+    [[nodiscard]] const BackdropConfig& screenshotBackdrop() const noexcept { return m_backdrop; }
 
     void setToolState(AnnotationToolState state);
     [[nodiscard]] const AnnotationToolState& toolState() const noexcept { return m_tools; }
@@ -113,6 +124,13 @@ namespace capture {
     void prepareFrame(Instance& instance, bool needsUpdate, bool needsLayout);
     void buildScene(Instance& instance);
     [[nodiscard]] std::unique_ptr<Flex> buildToolbar(Instance& instance);
+    [[nodiscard]] std::unique_ptr<Flex> buildBackdropPanel(Instance& instance);
+    void refreshBackdropPanel(Instance& instance, Renderer* renderer);
+    void positionBackdropPanel(Instance& instance);
+    void updateBackdropPreview(Instance& instance, Renderer& renderer);
+    void toggleBackdropPanel();
+    void editBackdrop(const std::function<void(BackdropConfig&)>& edit);
+    [[nodiscard]] bool backdropPanelInputFocused(const Instance& instance) const;
     void refreshToolbar(Instance& instance, Renderer* renderer);
     void positionToolbar(Instance& instance);
     void syncToolbarPositionsForConnectedOutputs();
@@ -176,6 +194,7 @@ namespace capture {
     FailureCallback m_onFailure;
     FeedbackCallback m_onFeedback;
     StateSetter m_stateSetter;
+    BackdropChangedCallback m_onBackdropChanged;
 
     std::vector<std::unique_ptr<Instance>> m_instances;
     std::unordered_map<wl_output*, AnnotationDocument> m_documents;
@@ -213,6 +232,13 @@ namespace capture {
     float m_toolbarGrabY = 0.0F;
     bool m_advancedSize = false;
     bool m_syncingSizePreset = false;
+
+    BackdropConfig m_backdrop;
+    bool m_backdropEdited = false;
+    bool m_backdropPanelOpen = false;
+    // Padding the Image-mode canvas was fitted around. Fixed for the session because the document
+    // stores annotations in canvas coordinates, so the canvas must not resize under them.
+    int m_backdropLayoutPadding = 0;
 
     std::vector<std::uint8_t> m_uploadScratch;
   };
