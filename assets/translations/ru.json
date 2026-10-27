@@ -671,7 +671,7 @@
         "variant": "Стиль",
         "variant-default": "По умолчанию",
         "variant-destructive": "Деструктивно",
-        "variant-ghost": "Ghost",
+        "variant-ghost": "Призрак",
         "variant-outline": "Контур",
         "variant-primary": "Основной",
         "variant-secondary": "Вторичный",
@@ -3797,7 +3797,7 @@
       "variant": {
         "default": "По умолчанию",
         "destructive": "Опасная",
-        "ghost": "Ghost",
+        "ghost": "Призрак",
         "outline": "Контур",
         "primary": "Основная",
         "secondary": "Вторичная"
