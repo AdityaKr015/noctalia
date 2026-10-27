@@ -419,8 +419,6 @@ _wlr_ls_c = custom_target('wlr-layer-shell-unstable-v1-client-source',
 _protocol_sources += _wlr_ls_c
 _protocol_headers += _wlr_ls_h
 
-alias_target('wayland-protocol-headers', _protocol_headers)
-
 # ── Main sources ──────────────────────────────────────────────────────────────
 _noctalia_sources = files(
   'src/app/application.cpp',
@@ -1056,6 +1054,13 @@ else
     configuration: _git_revision_config,
   )
 endif
+
+# Headers clang-tidy needs before any compile has run (see `just lint`).
+_generated_headers = _protocol_headers
+if git_program.found()
+  _generated_headers += _git_revision_h
+endif
+alias_target('generated-headers', _generated_headers)
 
 # ── Include directories ────────────────────────────────────────────────────────
 _noctalia_inc = [
