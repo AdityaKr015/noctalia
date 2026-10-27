@@ -1458,9 +1458,6 @@ capture::AnnotationToolState ScreenshotService::loadAnnotationToolState() const 
       state.fill = *parsed;
     }
   }
-  if (const auto advanced = m_configService.stateString(kAnnotateStateOwner, "advanced_size"); advanced.has_value()) {
-    state.advancedSize = *advanced == "1";
-  }
   if (const auto encoded = m_configService.stateString(kAnnotateStateOwner, "toolbar_positions"); encoded.has_value()) {
     const nlohmann::json positions = nlohmann::json::parse(*encoded, nullptr, false);
     bool invalid = !positions.is_object();

@@ -51,8 +51,7 @@ namespace capture {
     std::array<AnnotationColor, kAnnotationToolCount> color{};
     std::array<double, kAnnotationToolCount> width{};
     AnnotationFillMode fill = AnnotationFillMode::Off;
-    // Fine size stepper revealed, and each output's dragged toolbar spot; both survive across runs.
-    bool advancedSize = false;
+    // Each output's dragged toolbar spot survives across runs.
     std::unordered_map<std::string, AnnotationPoint> toolbarPositions;
   };
 
@@ -131,6 +130,10 @@ namespace capture {
     void toggleBackdropPanel();
     void editBackdrop(const std::function<void(BackdropConfig&)>& edit);
     [[nodiscard]] bool backdropPanelInputFocused(const Instance& instance) const;
+    [[nodiscard]] std::unique_ptr<Flex> buildStrokePanel(Instance& instance);
+    void refreshStrokePanel(Instance& instance, Renderer* renderer);
+    void positionStrokePanel(Instance& instance);
+    void toggleStrokePanel();
     void refreshToolbar(Instance& instance, Renderer* renderer);
     void positionToolbar(Instance& instance);
     void syncToolbarPositionsForConnectedOutputs();
@@ -138,7 +141,6 @@ namespace capture {
     void dragToolbarTo(double surfaceX, double surfaceY);
     [[nodiscard]] std::size_t nearestSizePreset(AnnotationTool tool) const;
     void applySizePreset(std::size_t index);
-    void toggleAdvancedSize();
     void layoutCanvas(Instance& instance);
     void redrawCommitted(Instance& instance);
     void redrawActive(Instance& instance, std::optional<AnnotationRect> changedBounds = std::nullopt);
@@ -230,7 +232,7 @@ namespace capture {
     Instance* m_toolbarDragInstance = nullptr;
     float m_toolbarGrabX = 0.0F;
     float m_toolbarGrabY = 0.0F;
-    bool m_advancedSize = false;
+    bool m_strokePanelOpen = false;
     bool m_syncingSizePreset = false;
 
     BackdropConfig m_backdrop;

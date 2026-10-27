@@ -54,6 +54,7 @@ namespace capture {
     constexpr float kCropFrameWidth = 2.0F;
     constexpr float kSwatchSize = 20.0F;
     constexpr float kSwatchGlyphSize = 12.0F;
+    constexpr float kStrokeButtonSize = 24.0F;
     constexpr float kToolbarFillAlpha = 0.9F;
     constexpr float kImageSurroundAlpha = 0.85F;
     constexpr float kSemiFillAlpha = 0.3F;
@@ -73,6 +74,8 @@ namespace capture {
     // weight for a 6 px brush and a 32 px blur.
     constexpr std::array<double, 3> kSizePresets = {0.5, 1.0, 2.0};
     constexpr std::size_t kDefaultSizePreset = 1;
+    // The stroke button's dot grows with the S / M / L preset nearest the current width.
+    constexpr std::array<float, kSizePresets.size()> kStrokeDotSizes = {8.0F, 12.0F, 16.0F};
 
     struct Swatch {
       AnnotationColor color;
@@ -112,6 +115,15 @@ namespace capture {
     }};
 
     [[nodiscard]] std::size_t toolIndex(AnnotationTool tool) { return static_cast<std::size_t>(tool); }
+
+    // Move and Crop carry no stroke; Eraser and Blur take a size but no color.
+    [[nodiscard]] bool toolUsesSize(AnnotationTool tool) {
+      return tool != AnnotationTool::Move && tool != AnnotationTool::Crop;
+    }
+
+    [[nodiscard]] bool toolUsesColor(AnnotationTool tool) {
+      return toolUsesSize(tool) && tool != AnnotationTool::Eraser && tool != AnnotationTool::Blur;
+    }
 
     using BackdropConfig = ScreenshotBackdropSettings;
 
@@ -474,7 +486,7 @@ namespace capture {
     Box* cropFrame = nullptr;
     Flex* toolbar = nullptr;
     std::array<Button*, kAnnotationToolCount> toolButtons{};
-    std::array<Button*, kSwatches.size()> swatchButtons{};
+    Button* strokeButton = nullptr;
     Button* fillButton = nullptr;
     Button* freezeButton = nullptr;
     Button* cursorButton = nullptr;
@@ -484,14 +496,18 @@ namespace capture {
     Button* saveButton = nullptr;
     Button* doneButton = nullptr;
     Button* dragHandle = nullptr;
-    Button* advancedButton = nullptr;
+    Separator* strokeSeparator = nullptr;
+    Separator* exportSeparator = nullptr;
+    Button* backdropButton = nullptr;
+
+    // Stroke popover: the color swatches and the size controls of the current tool.
+    Flex* strokePanel = nullptr;
+    Flex* strokeSwatchRow = nullptr;
+    std::array<Button*, kSwatches.size()> swatchButtons{};
+    Segmented* sizePresets = nullptr;
     Button* sizeDownButton = nullptr;
     Button* sizeUpButton = nullptr;
     Label* sizeLabel = nullptr;
-    Segmented* sizePresets = nullptr;
-    Separator* sizeSeparator = nullptr;
-    Separator* exportSeparator = nullptr;
-    Button* backdropButton = nullptr;
 
     // Backdrop panel and the Image-mode preview frame drawn behind the canvas.
     Flex* backdropPanel = nullptr;
@@ -529,7 +545,11 @@ namespace capture {
     const ScreencopyImage* backdropImage = nullptr;
     bool pointerInside = false;
     // Toolbar glyph state, so a mark only moves (and forces a relayout) when it really changed.
-    std::optional<std::size_t> markedSwatch;
+    // -2 = swatches not yet marked, -1 = no swatch matches the tool color.
+    int markedSwatch = -2;
+    // Stroke button face; an empty preset means it is not painted yet.
+    std::optional<AnnotationColor> strokeFaceColor;
+    std::optional<std::size_t> strokeFacePreset;
     AnnotationFillMode fillGlyphMode = AnnotationFillMode::Off;
     const char* cursorTooltip = nullptr;
   };
@@ -577,7 +597,6 @@ namespace capture {
       const double floorWidth = tool == AnnotationTool::Text ? kMinTextWidth : kMinToolWidth;
       m_tools.width[i] = std::clamp(m_tools.width[i], floorWidth, limit);
     }
-    m_advancedSize = state.advancedSize;
     m_toolbarPositions.clear();
     for (auto& inst : m_instances) {
       if (inst != nullptr) {
@@ -674,6 +693,7 @@ namespace capture {
     m_cropDragging = false;
     m_textInstance = nullptr;
     m_textIndex.reset();
+    m_strokePanelOpen = false;
     destroySurfaces();
     m_documents.clear();
     m_frozen.clear();
@@ -1012,12 +1032,19 @@ namespace capture {
     inst.dimTop = inst.dimBottom = inst.dimLeft = inst.dimRight = inst.cropFrame = nullptr;
     inst.toolbar = nullptr;
     inst.toolButtons.fill(nullptr);
-    inst.swatchButtons.fill(nullptr);
-    inst.fillButton = inst.freezeButton = inst.cursorButton = nullptr;
+    inst.strokeButton = inst.fillButton = inst.freezeButton = inst.cursorButton = nullptr;
     inst.cursorTooltip = nullptr;
-    inst.undoButton = inst.redoButton = inst.copyButton = inst.saveButton = inst.doneButton = nullptr;
-    inst.exportSeparator = nullptr;
+    inst.undoButton = inst.redoButton = inst.copyButton = inst.saveButton = inst.doneButton = inst.dragHandle = nullptr;
+    inst.strokeSeparator = inst.exportSeparator = nullptr;
     inst.backdropButton = nullptr;
+    inst.strokePanel = inst.strokeSwatchRow = nullptr;
+    inst.swatchButtons.fill(nullptr);
+    inst.sizePresets = nullptr;
+    inst.sizeDownButton = inst.sizeUpButton = nullptr;
+    inst.sizeLabel = nullptr;
+    inst.markedSwatch = -2;
+    inst.strokeFaceColor.reset();
+    inst.strokeFacePreset.reset();
     if (inst.backdropPreview != nullptr) {
       inst.backdropPreview->clear(renderer);
     }
@@ -1042,6 +1069,8 @@ namespace capture {
     toolbar->layout(renderer);
     auto backdropPanel = buildBackdropPanel(inst);
     backdropPanel->layout(renderer);
+    auto strokePanel = buildStrokePanel(inst);
+    strokePanel->layout(renderer);
     positionToolbar(inst);
     layoutCanvas(inst);
 
@@ -1177,6 +1206,7 @@ namespace capture {
     inst.sceneRoot->addChild(std::move(canvas));
     inst.sceneRoot->addChild(std::move(toolbar));
     inst.sceneRoot->addChild(std::move(backdropPanel));
+    inst.sceneRoot->addChild(std::move(strokePanel));
 
     inst.surface->setSceneRoot(inst.sceneRoot.get());
     inst.inputDispatcher.setSceneRoot(inst.sceneRoot.get());
@@ -1346,6 +1376,11 @@ namespace capture {
         }
       });
     }
+
+    // Editor controls lead the bar, keeping Close well away from Done at the trailing end.
+    if (Style::closeButtonsEnabled()) {
+      addGhostButton("x", "bar.annotate.close", [this]() { requestClose(); });
+    }
     addSeparator();
 
     inst.undoButton = addGhostButton("arrow-back-up", "bar.annotate.undo", [this]() { undo(); });
@@ -1364,8 +1399,29 @@ namespace capture {
       ));
     }
 
+    // Separators sit before each group; refreshToolbar hides the ones whose group is empty.
+    inst.strokeSeparator = addSeparator();
+    inst.strokeButton = static_cast<Button*>(toolbar->addChild(
+        ui::button({
+            .glyph = std::string("circle-filled"),
+            .glyphSize = kStrokeDotSizes[kDefaultSizePreset],
+            .variant = ButtonVariant::Ghost,
+            .tooltip = i18n::tr("bar.annotate.stroke"),
+            .minWidth = kStrokeButtonSize,
+            .minHeight = kStrokeButtonSize,
+            .maxWidth = kStrokeButtonSize,
+            .maxHeight = kStrokeButtonSize,
+            .padding = 0.0F,
+            .radius = Style::radiusSm,
+            .width = kStrokeButtonSize,
+            .height = kStrokeButtonSize,
+            .onClick = [this]() { toggleStrokePanel(); },
+        })
+    ));
+    inst.fillButton = addGhostButton("bucket-off", "bar.annotate.fill-off", [this]() { cycleFill(); });
+    inst.fillButton->setOnRightClick([this]() { cycleFill(false); });
+
     addSeparator();
-    inst.freezeButton = addGhostButton("snowflake", "bar.annotate.freeze", [this]() { requestFreeze(); });
     inst.cursorButton = addGhostButton("pointer", "bar.annotate.cursor", [this, instPtr]() { toggleCursor(instPtr); });
     if (const ScreenshotImage* image = screenshot(inst);
         image != nullptr && !image->canToggleCursor() && image->cursorVisible) {
@@ -1377,61 +1433,11 @@ namespace capture {
       }
       inst.cursorButton->setCustomPalette(palette);
     }
-    inst.fillButton = addGhostButton("bucket-off", "bar.annotate.fill-off", [this]() { cycleFill(); });
-    inst.fillButton->setOnRightClick([this]() { cycleFill(false); });
-    inst.backdropButton = addGhostButton("background", "bar.annotate.backdrop", [this]() { toggleBackdropPanel(); });
-    addSeparator();
-
-    for (std::size_t i = 0; i < kSwatches.size(); ++i) {
-      const AnnotationColor color = kSwatches[i].color;
-      inst.swatchButtons[i] = static_cast<Button*>(toolbar->addChild(
-          ui::button({
-              .glyph = std::string("check"),
-              .glyphSize = kSwatchGlyphSize,
-              .customPalette = swatchPalette(color),
-              .tooltip = i18n::tr(kSwatches[i].tooltipKey),
-              .minWidth = kSwatchSize,
-              .minHeight = kSwatchSize,
-              .maxWidth = kSwatchSize,
-              .maxHeight = kSwatchSize,
-              .padding = 0.0F,
-              .radius = Style::radiusSm,
-              .width = kSwatchSize,
-              .height = kSwatchSize,
-              .onClick = [this, color]() { setToolColor(color); },
-          })
-      ));
-    }
-
-    inst.sizeSeparator = addSeparator();
-    inst.sizePresets = static_cast<Segmented*>(toolbar->addChild(
-        ui::segmented({
-            .options =
-                std::vector<ui::SegmentedOption>{
-                    {.label = "S", .glyph = {}, .tooltip = i18n::tr("bar.annotate.size-small")},
-                    {.label = "M", .glyph = {}, .tooltip = i18n::tr("bar.annotate.size-medium")},
-                    {.label = "L", .glyph = {}, .tooltip = i18n::tr("bar.annotate.size-large")},
-                },
-            .selectedIndex = kDefaultSizePreset,
-            .fontSize = Style::fontSizeCaption,
-            .compact = true,
-            .onChange = [this](std::size_t index) { applySizePreset(index); },
-        })
-    ));
-    inst.advancedButton =
-        addGhostButton("adjustments-horizontal", "bar.annotate.size-advanced", [this]() { toggleAdvancedSize(); });
-    inst.sizeDownButton = addGhostButton("minus", "bar.annotate.size-decrease", [this]() { adjustToolWidth(-1.0); });
-    inst.sizeLabel = static_cast<Label*>(toolbar->addChild(
-        ui::label({
-            .fontSize = Style::fontSizeCaption,
-            .color = colorSpecFromRole(ColorRole::OnSurface),
-            .minWidth = kSizeLabelWidth,
-            .textAlign = TextAlign::Center,
-        })
-    ));
-    inst.sizeUpButton = addGhostButton("plus", "bar.annotate.size-increase", [this]() { adjustToolWidth(1.0); });
+    inst.freezeButton = addGhostButton("snowflake", "bar.annotate.freeze", [this]() { requestFreeze(); });
+    addGhostButton("screenshot", "bar.annotate.capture-new-region", [this]() { requestCaptureRegion(); });
 
     inst.exportSeparator = addSeparator();
+    inst.backdropButton = addGhostButton("background", "bar.annotate.backdrop", [this]() { toggleBackdropPanel(); });
     inst.copyButton = addGhostButton("copy", "bar.annotate.copy", [this]() { requestExport(AnnotationExport::Copy); });
     inst.saveButton =
         addGhostButton("device-floppy", "bar.annotate.save", [this]() { requestExport(AnnotationExport::Save); });
@@ -1443,10 +1449,6 @@ namespace capture {
             .onClick = [this]() { requestExport(AnnotationExport::Done); },
         })
     ));
-    addGhostButton("screenshot", "bar.annotate.capture-new-region", [this]() { requestCaptureRegion(); });
-    if (Style::closeButtonsEnabled()) {
-      addGhostButton("x", "bar.annotate.close", [this]() { requestClose(); });
-    }
 
     inst.toolbar = toolbar.get();
     refreshToolbar(inst, nullptr);
@@ -1503,6 +1505,30 @@ namespace capture {
         );
       }
     }
+
+    // Move and Crop carry no stroke, so the stroke group (and its separator) has nothing to act on.
+    const bool sizedTool = toolUsesSize(m_tools.tool);
+    show(inst.strokeSeparator, sizedTool);
+    show(inst.strokeButton, sizedTool);
+    if (inst.strokeButton != nullptr && sizedTool) {
+      inst.strokeButton->setSelected(m_strokePanelOpen);
+      // The face is the tool color, neutral for tools that ignore color, with a dot sized by
+      // the nearest S / M / L preset.
+      std::optional<AnnotationColor> faceColor;
+      if (toolUsesColor(m_tools.tool)) {
+        faceColor = m_tools.color[toolIndex(m_tools.tool)];
+      }
+      const std::size_t facePreset = nearestSizePreset(m_tools.tool);
+      if (faceColor != inst.strokeFaceColor || inst.strokeFacePreset != facePreset) {
+        inst.strokeButton->setCustomPalette(
+            faceColor.has_value() ? swatchPalette(*faceColor) : Button::defaultPalette(ButtonVariant::Ghost)
+        );
+        inst.strokeButton->setGlyphSize(kStrokeDotSizes[facePreset]);
+        inst.strokeFaceColor = faceColor;
+        inst.strokeFacePreset = facePreset;
+        needsLayout = true;
+      }
+    }
     show(inst.fillButton, shapeTool);
     if (inst.fillButton != nullptr) {
       inst.fillButton->setSelected(m_tools.fill != AnnotationFillMode::Off);
@@ -1516,27 +1542,6 @@ namespace capture {
       }
     }
 
-    // Move and Crop carry no stroke weight, so the size controls have nothing to act on.
-    const bool sizedTool = m_tools.tool != AnnotationTool::Move && m_tools.tool != AnnotationTool::Crop;
-    show(inst.sizeSeparator, sizedTool);
-    show(inst.sizePresets, sizedTool);
-    show(inst.advancedButton, sizedTool);
-    show(inst.sizeDownButton, sizedTool && m_advancedSize);
-    show(inst.sizeUpButton, sizedTool && m_advancedSize);
-    show(inst.sizeLabel, sizedTool && m_advancedSize);
-    if (inst.advancedButton != nullptr) {
-      inst.advancedButton->setSelected(m_advancedSize);
-    }
-    if (inst.sizeLabel != nullptr && sizedTool && m_advancedSize) {
-      inst.sizeLabel->setText(std::format("{}", static_cast<int>(std::lround(m_tools.width[toolIndex(m_tools.tool)]))));
-    }
-    if (inst.sizePresets != nullptr && sizedTool) {
-      // setSelectedIndex fires onChange, which would snap a fine-tuned width back to a preset.
-      m_syncingSizePreset = true;
-      inst.sizePresets->setSelectedIndex(nearestSizePreset(m_tools.tool));
-      m_syncingSizePreset = false;
-    }
-
     show(inst.backdropButton, imageMode);
     if (inst.backdropButton != nullptr) {
       inst.backdropButton->setSelected(m_backdropPanelOpen);
@@ -1546,33 +1551,6 @@ namespace capture {
     show(inst.copyButton, frozenOrImage);
     show(inst.saveButton, frozenOrImage);
     show(inst.doneButton, imageMode);
-
-    // The tick moves between swatches, and a button laid out while its glyph was empty keeps a
-    // zero-sized glyph box, which parks the mark in a corner. Relayout when the mark moves.
-    std::optional<std::size_t> markedSwatch;
-    for (std::size_t i = 0; i < kSwatches.size(); ++i) {
-      if (m_tools.color[toolIndex(m_tools.tool)] == kSwatches[i].color) {
-        markedSwatch = i;
-        break;
-      }
-    }
-    if (markedSwatch != inst.markedSwatch) {
-      for (std::size_t i = 0; i < kSwatches.size(); ++i) {
-        Button* swatch = inst.swatchButtons[i];
-        if (swatch == nullptr || swatch->glyph() == nullptr) {
-          continue;
-        }
-        const bool current = markedSwatch.has_value() && *markedSwatch == i;
-        swatch->setSelected(current);
-        if (current) {
-          swatch->setGlyph("check");
-        } else {
-          (void)swatch->glyph()->setCodepoint(0);
-        }
-      }
-      inst.markedSwatch = markedSwatch;
-      needsLayout = true;
-    }
 
     const AnnotationDocument& doc = documentFor(inst);
     if (inst.undoButton != nullptr) {
@@ -1586,6 +1564,7 @@ namespace capture {
       inst.toolbar->layout(*renderer);
     }
     refreshBackdropPanel(inst, renderer);
+    refreshStrokePanel(inst, renderer);
     positionToolbar(inst);
   }
 
@@ -1615,11 +1594,6 @@ namespace capture {
         text ? kMaxTextWidth : kMaxToolWidth
     );
     restyleActiveText();
-    requestRedrawAll();
-  }
-
-  void AnnotationOverlay::toggleAdvancedSize() {
-    m_advancedSize = !m_advancedSize;
     requestRedrawAll();
   }
 
@@ -1662,6 +1636,7 @@ namespace capture {
       }
     }
     positionBackdropPanel(inst);
+    positionStrokePanel(inst);
   }
 
   void AnnotationOverlay::syncToolbarPositionsForConnectedOutputs() {
@@ -2023,6 +1998,12 @@ namespace capture {
     if (!pressed) {
       finishGesture();
       return;
+    }
+
+    // Drawing dismisses the stroke popover; the press still starts the mark.
+    if (m_strokePanelOpen) {
+      m_strokePanelOpen = false;
+      requestRedrawAll();
     }
 
     // A fresh press elsewhere ends an open text edit before starting anything new.
@@ -2417,6 +2398,20 @@ namespace capture {
     case XKB_KEY_P:
       toggleCursor();
       return true;
+    case XKB_KEY_1:
+    case XKB_KEY_2:
+    case XKB_KEY_3:
+    case XKB_KEY_4:
+    case XKB_KEY_5:
+    case XKB_KEY_6:
+    case XKB_KEY_7:
+    case XKB_KEY_8:
+      // Same as clicking swatch 1 to 8; tools that ignore color leave the key unhandled.
+      if (!toolUsesColor(m_tools.tool)) {
+        return false;
+      }
+      setToolColor(kSwatches[sym - XKB_KEY_1].color);
+      return true;
     case XKB_KEY_bracketleft:
       adjustToolWidth(-1.0);
       return true;
@@ -2470,6 +2465,11 @@ namespace capture {
     const bool shift = (event.modifiers & KeyMod::Shift) != 0;
 
     if (KeybindMatcher::matches(KeybindAction::Cancel, event.sym, event.modifiers)) {
+      if (m_strokePanelOpen) {
+        m_strokePanelOpen = false;
+        requestRedrawAll();
+        return true;
+      }
       if (m_gestureActive && m_gestureInstance != nullptr) {
         Instance* inst = m_gestureInstance;
         AnnotationDocument& doc = documentFor(*inst);
@@ -2573,6 +2573,10 @@ namespace capture {
       return;
     }
     m_tools.tool = tool;
+    // The stroke button hides for tools without a stroke; its popover goes with it.
+    if (!toolUsesSize(tool)) {
+      m_strokePanelOpen = false;
+    }
     requestRedrawAll();
   }
 
@@ -3019,6 +3023,9 @@ namespace capture {
 
   void AnnotationOverlay::toggleBackdropPanel() {
     m_backdropPanelOpen = !m_backdropPanelOpen;
+    if (m_backdropPanelOpen) {
+      m_strokePanelOpen = false;
+    }
     requestRedrawAll();
   }
 
@@ -3035,13 +3042,193 @@ namespace capture {
            });
   }
 
+  std::unique_ptr<Flex> AnnotationOverlay::buildStrokePanel(Instance& inst) {
+    Color panelFill = colorForRole(ColorRole::Surface);
+    panelFill.a = kToolbarFillAlpha;
+
+    auto panel = ui::column({
+        .align = FlexAlign::Stretch,
+        .gap = Style::spaceSm,
+        .paddingV = Style::spaceMd,
+        .paddingH = Style::spaceMd,
+        .fill = fixedColorSpec(panelFill),
+        .radius = Style::radiusXl,
+        .border = colorSpecFromRole(ColorRole::OutlineVariant),
+        .borderWidth = Style::borderWidth,
+        .visible = false,
+        .participatesInLayout = false,
+    });
+
+    auto swatches = ui::row({.align = FlexAlign::Center, .justify = FlexJustify::SpaceBetween, .gap = Style::spaceSm});
+    for (std::size_t i = 0; i < kSwatches.size(); ++i) {
+      const AnnotationColor color = kSwatches[i].color;
+      inst.swatchButtons[i] = static_cast<Button*>(swatches->addChild(
+          ui::button({
+              .glyph = std::string("check"),
+              .glyphSize = kSwatchGlyphSize,
+              .customPalette = swatchPalette(color),
+              .tooltip = i18n::tr(kSwatches[i].tooltipKey),
+              .minWidth = kSwatchSize,
+              .minHeight = kSwatchSize,
+              .maxWidth = kSwatchSize,
+              .maxHeight = kSwatchSize,
+              .padding = 0.0F,
+              .radius = Style::radiusSm,
+              .width = kSwatchSize,
+              .height = kSwatchSize,
+              .onClick = [this, color]() { setToolColor(color); },
+          })
+      ));
+    }
+    inst.strokeSwatchRow = static_cast<Flex*>(panel->addChild(std::move(swatches)));
+
+    // S / M / L on the left, the pixel stepper for anything in between on the right.
+    auto sizes = ui::row({.align = FlexAlign::Center, .justify = FlexJustify::SpaceBetween, .gap = Style::spaceSm});
+    inst.sizePresets = static_cast<Segmented*>(sizes->addChild(
+        ui::segmented({
+            .options =
+                std::vector<ui::SegmentedOption>{
+                    {.label = "S", .glyph = {}, .tooltip = i18n::tr("bar.annotate.size-small")},
+                    {.label = "M", .glyph = {}, .tooltip = i18n::tr("bar.annotate.size-medium")},
+                    {.label = "L", .glyph = {}, .tooltip = i18n::tr("bar.annotate.size-large")},
+                },
+            .selectedIndex = kDefaultSizePreset,
+            .fontSize = Style::fontSizeCaption,
+            .compact = true,
+            .onChange = [this](std::size_t index) { applySizePreset(index); },
+        })
+    ));
+
+    auto stepper = ui::row({.align = FlexAlign::Center, .gap = Style::spaceXs});
+    inst.sizeDownButton = static_cast<Button*>(stepper->addChild(
+        ui::button({
+            .glyph = std::string("minus"),
+            .variant = ButtonVariant::Ghost,
+            .tooltip = i18n::tr("bar.annotate.size-decrease"),
+            .onClick = [this]() { adjustToolWidth(-1.0); },
+        })
+    ));
+    inst.sizeLabel = static_cast<Label*>(stepper->addChild(
+        ui::label({
+            .fontSize = Style::fontSizeCaption,
+            .color = colorSpecFromRole(ColorRole::OnSurface),
+            .minWidth = kSizeLabelWidth,
+            .textAlign = TextAlign::Center,
+        })
+    ));
+    inst.sizeUpButton = static_cast<Button*>(stepper->addChild(
+        ui::button({
+            .glyph = std::string("plus"),
+            .variant = ButtonVariant::Ghost,
+            .tooltip = i18n::tr("bar.annotate.size-increase"),
+            .onClick = [this]() { adjustToolWidth(1.0); },
+        })
+    ));
+    sizes->addChild(std::move(stepper));
+    panel->addChild(std::move(sizes));
+
+    inst.strokePanel = panel.get();
+    refreshStrokePanel(inst, nullptr);
+    return panel;
+  }
+
+  void AnnotationOverlay::refreshStrokePanel(Instance& inst, Renderer* renderer) {
+    if (inst.strokePanel == nullptr) {
+      return;
+    }
+    bool needsLayout = false;
+    const auto show = [&needsLayout](Node* node, bool visible) {
+      if (node != nullptr && node->visible() != visible) {
+        node->setVisible(visible);
+        node->setParticipatesInLayout(visible);
+        needsLayout = true;
+      }
+    };
+    const std::size_t index = toolIndex(m_tools.tool);
+    show(inst.strokePanel, m_strokePanelOpen);
+    show(inst.strokeSwatchRow, toolUsesColor(m_tools.tool));
+
+    if (inst.sizeLabel != nullptr) {
+      inst.sizeLabel->setText(std::format("{}", static_cast<int>(std::lround(m_tools.width[index]))));
+    }
+    if (inst.sizePresets != nullptr && toolUsesSize(m_tools.tool)) {
+      // setSelectedIndex fires onChange, which would snap a fine-tuned width back to a preset.
+      m_syncingSizePreset = true;
+      inst.sizePresets->setSelectedIndex(nearestSizePreset(m_tools.tool));
+      m_syncingSizePreset = false;
+    }
+
+    // The tick moves between swatches, and a button laid out while its glyph was empty keeps a
+    // zero-sized glyph box, which parks the mark in a corner. Relayout when the mark moves.
+    int marked = -1;
+    for (std::size_t i = 0; i < kSwatches.size(); ++i) {
+      if (m_tools.color[index] == kSwatches[i].color) {
+        marked = static_cast<int>(i);
+        break;
+      }
+    }
+    if (marked != inst.markedSwatch) {
+      for (std::size_t i = 0; i < kSwatches.size(); ++i) {
+        Button* swatch = inst.swatchButtons[i];
+        if (swatch == nullptr || swatch->glyph() == nullptr) {
+          continue;
+        }
+        const bool current = static_cast<int>(i) == marked;
+        swatch->setSelected(current);
+        if (current) {
+          swatch->setGlyph("check");
+        } else {
+          (void)swatch->glyph()->setCodepoint(0);
+        }
+      }
+      inst.markedSwatch = marked;
+      needsLayout = true;
+    }
+
+    // The surface does not lay out the overlay scene itself; a new size label marks the panel
+    // layout-dirty and only a panel relayout re-centers it.
+    if ((needsLayout || inst.strokePanel->layoutDirty()) && renderer != nullptr) {
+      inst.strokePanel->layout(*renderer);
+    }
+  }
+
+  // Drops from the stroke button, centered on it, toward whichever side of the toolbar has more room.
+  void AnnotationOverlay::positionStrokePanel(Instance& inst) {
+    if (inst.strokePanel == nullptr
+        || inst.strokeButton == nullptr
+        || inst.toolbar == nullptr
+        || inst.surface == nullptr) {
+      return;
+    }
+    const auto surfaceW = static_cast<float>(inst.surface->width());
+    const auto surfaceH = static_cast<float>(inst.surface->height());
+    const float width = inst.strokePanel->width();
+    const float height = inst.strokePanel->height();
+    const float toolbarBottom = inst.toolbar->y() + inst.toolbar->height();
+    const bool below = inst.toolbar->y() + (inst.toolbar->height() * 0.5F) <= surfaceH * 0.5F;
+
+    float x = inst.toolbar->x() + inst.strokeButton->x() + ((inst.strokeButton->width() - width) * 0.5F);
+    float y = below ? toolbarBottom + Style::spaceSm : inst.toolbar->y() - Style::spaceSm - height;
+    x = std::clamp(x, kToolbarEdgeMargin, std::max(kToolbarEdgeMargin, surfaceW - width - kToolbarEdgeMargin));
+    y = std::clamp(y, kToolbarEdgeMargin, std::max(kToolbarEdgeMargin, surfaceH - height - kToolbarEdgeMargin));
+    inst.strokePanel->setPosition(x, y);
+  }
+
+  // Only one panel is open at a time, so opening this one closes the backdrop panel.
+  void AnnotationOverlay::toggleStrokePanel() {
+    m_strokePanelOpen = !m_strokePanelOpen;
+    if (m_strokePanelOpen) {
+      m_backdropPanelOpen = false;
+    }
+    requestRedrawAll();
+  }
+
   void AnnotationOverlay::persistToolState() {
     if (!m_stateSetter) {
       return;
     }
     m_stateSetter("tool", annotationToolName(m_tools.tool));
     m_stateSetter("fill", annotationFillModeName(m_tools.fill));
-    m_stateSetter("advanced_size", m_advancedSize ? "1" : "0");
     syncToolbarPositionsForConnectedOutputs();
     nlohmann::json toolbarPositions = nlohmann::json::object();
     for (const auto& [outputName, position] : m_tools.toolbarPositions) {
