@@ -273,22 +273,14 @@ namespace {
     const auto outputW = static_cast<float>(outputInfo.effectiveLogicalWidth());
     const auto outputH = static_cast<float>(outputInfo.effectiveLogicalHeight());
 
-    float x = 0.0F;
-    float y = 0.0F;
-    if (aLeft && aRight) {
-      x = mLeft;
-    } else if (aRight) {
+    float x = mLeft;
+    float y = mTop;
+    if (aRight && !aLeft) {
       x = std::max(0.0F, outputW - mRight - surfW);
-    } else {
-      x = mLeft;
     }
 
-    if (aTop && aBottom) {
-      y = mTop;
-    } else if (aBottom) {
+    if (aBottom && !aTop) {
       y = std::max(0.0F, outputH - mBottom - surfH);
-    } else {
-      y = mTop;
     }
     return {x, y};
   }
@@ -314,7 +306,7 @@ namespace {
       std::string_view panelId, std::string_view context, bool toggle
   ) {
     auto& panelManager = PanelManager::instance();
-    if (toggle && panelManager.isOpenPanel(std::string(panelId))) {
+    if (toggle && panelManager.isOpenPanel(panelId)) {
       panelManager.closePanel();
       return;
     }
@@ -335,8 +327,8 @@ namespace {
             .anchorX = anchorX,
             .anchorY = anchorY,
             .hasAnchorPosition = true,
-            .context = std::string(context),
-            .sourceBarName = std::string(sourceBarName),
+            .context = context,
+            .sourceBarName = sourceBarName,
         }
     );
   }
@@ -1180,9 +1172,8 @@ namespace {
             } else {
               const float memberStart = contentMain + memberMainPos(node);
               const float memberEnd = memberStart + memberMainExtent(node);
-              widget->setBarPointerSuppressed(
-                  !(memberStart >= padMain - 0.5F && memberEnd <= padMain + revealMain + 0.5F)
-              );
+              const bool memberFullyVisible = memberStart >= padMain - 0.5F && memberEnd <= padMain + revealMain + 0.5F;
+              widget->setBarPointerSuppressed(!memberFullyVisible);
             }
           }
         }

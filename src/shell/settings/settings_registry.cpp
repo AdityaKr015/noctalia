@@ -114,7 +114,7 @@ namespace settings {
     }};
 
     const SettingsSectionDescriptor& descriptorFor(SettingsSection section) {
-      const auto it = std::ranges::find(kSettingsSections, section, &SettingsSectionDescriptor::section);
+      const auto* it = std::ranges::find(kSettingsSections, section, &SettingsSectionDescriptor::section);
       if (it == kSettingsSections.end()) {
         std::abort();
       }
@@ -465,7 +465,7 @@ namespace settings {
   std::string_view sectionGlyph(SettingsSection section) { return descriptorFor(section).glyph; }
 
   std::optional<SettingsSection> settingsSectionFromId(std::string_view id) {
-    const auto it = std::ranges::find(kSettingsSections, id, &SettingsSectionDescriptor::id);
+    const auto* it = std::ranges::find(kSettingsSections, id, &SettingsSectionDescriptor::id);
     if (it == kSettingsSections.end()) {
       return std::nullopt;
     }
@@ -3923,7 +3923,7 @@ namespace settings {
         const std::string key(noctalia::bar::gestureConfigKey(gesture));
         const auto configured = bar.deadZone.actions.find(key);
         entries.push_back(makeEntry(
-            section, "dead-zone", tr(std::string(noctalia::bar::gestureLabelKey(gesture))),
+            section, "dead-zone", tr(noctalia::bar::gestureLabelKey(gesture)),
             tr("settings.schema.bar.dead-zone-action.description"),
             std::vector<std::string>{"bar", bar.name, "dead_zone", "actions", key},
             GestureActionSetting{
@@ -4315,7 +4315,7 @@ namespace settings {
           }
           const auto inherited = bar.deadZone.actions.find(key);
           entries.push_back(makeEntry(
-              section, "dead-zone", tr(std::string(noctalia::bar::gestureLabelKey(gesture))),
+              section, "dead-zone", tr(noctalia::bar::gestureLabelKey(gesture)),
               tr("settings.schema.bar.dead-zone-action.description"), std::move(gesturePath),
               GestureActionSetting{
                   .gestureKey = key,
